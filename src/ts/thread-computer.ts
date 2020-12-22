@@ -131,18 +131,17 @@ class ThreadComputer {
 
         for (let iPegId1 = 0; iPegId1 < this.pegs.length; iPegId1++) {
             for (let iPegId2 = iPegId1 + 1; iPegId2 < this.pegs.length; iPegId2++) {
-                const candidateScore = this.computeThreadPotential(this.pegs[iPegId1], this.pegs[iPegId2]);
-                if (candidateScore < bestScore) {
-                    bestScore = candidateScore;
-                    candidates = [{
-                        peg1: this.pegs[iPegId1],
-                        peg2: this.pegs[iPegId2],
-                    }];
-                } else if (candidateScore === bestScore) {
-                    candidates.push({
-                        peg1: this.pegs[iPegId1],
-                        peg2: this.pegs[iPegId2],
-                    });
+                const peg1 = this.pegs[iPegId1];
+                const peg2 = this.pegs[iPegId2];
+
+                if (this.isNextPegValid(peg1, peg2)) {
+                    const candidateScore = this.computeThreadPotential(peg1, peg2);
+                    if (candidateScore < bestScore) {
+                        bestScore = candidateScore;
+                        candidates = [{ peg1, peg2, }];
+                    } else if (candidateScore === bestScore) {
+                        candidates.push({ peg1, peg2, });
+                    }
                 }
             }
         }
@@ -157,7 +156,7 @@ class ThreadComputer {
         let bestScore = MAX_SAFE_NUMBER;
 
         for (const peg of this.pegs) {
-            if (peg !== currentPeg) {
+            if (this.isNextPegValid(currentPeg, peg)) {
                 const candidateScore = this.computeThreadPotential(currentPeg, peg);
                 if (candidateScore < bestScore) {
                     bestScore = candidateScore;
@@ -232,6 +231,13 @@ class ThreadComputer {
     private sampleCanvasPixel(pixelX: number, pixelY: number): number {
         const base = 4 * (pixelX + pixelY * this.hiddenCanvas.width);
         return (this.hiddenCanvasData[base] + this.hiddenCanvasData[base + 1] + this.hiddenCanvasData[base + 2]) / 3;
+    }
+
+    private isNextPegValid(sourcePeg: IPeg, candidatePeg: IPeg): boolean {
+        if (sourcePeg === candidatePeg) {
+            return false;
+        }
+        return true;
     }
 
     private static computeBestSize(sourceImageSize: ISize, maxSize: number): ISize {
