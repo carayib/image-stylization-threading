@@ -53,17 +53,6 @@ class ThreadComputer {
         this.hiddenCanvasContext.drawImage(image, 0, 0, hiddenCanvasSize.width, hiddenCanvasSize.height);
 
         this.pegs = ThreadComputer.computePegs(hiddenCanvasSize, NB_PEGS, pegsShape);
-
-        const diameter = 5;
-        this.hiddenCanvasContext.fillStyle = "red";
-        this.hiddenCanvasContext.strokeStyle = "none";
-
-        for (const peg of this.pegs) {
-            this.hiddenCanvasContext.beginPath();
-            this.hiddenCanvasContext.arc(peg.x, peg.y, 0.5 * diameter, 0, TWO_PI);
-            this.hiddenCanvasContext.fill();
-            this.hiddenCanvasContext.closePath();
-        }
     }
 
     public draw(targetContext: CanvasRenderingContext2D): void {
