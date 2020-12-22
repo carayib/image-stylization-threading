@@ -296,7 +296,7 @@ class ThreadComputer {
                 const peg: IPegCircle = {
                     x: 0.5 * domainSize.width * (1 + Math.cos(angle)),
                     y: 0.5 * domainSize.height * (1 + Math.sin(angle)),
-                    angle: angle,
+                    angle,
                 }
                 pegs.push(peg);
             }
