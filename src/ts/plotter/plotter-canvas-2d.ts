@@ -41,7 +41,9 @@ class PlotterCanvas2D extends PlotterBase {
         if (value === 0) {
             this.canvas.style.filter = "";
         } else {
-            this.canvas.style.filter = `blur(${value}px)`;
+            this.canvas.style.filter = `blur(${value}px)`; // simple blur supported everywhere but with artifacts on the edges
+            // artifact-free blur, but not supported everywhere
+            this.canvas.style.filter = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='a' x='0' y='0' width='1' height='1'%3E%3CfeGaussianBlur stdDeviation='${value}' result='b'/%3E%3CfeMorphology operator='dilate' radius='${value}'/%3E %3CfeMerge%3E%3CfeMergeNode/%3E%3CfeMergeNode in='b'/%3E%3C/feMerge%3E%3C/filter%3E%3C/svg%3E#a")`;
         }
     }
 
