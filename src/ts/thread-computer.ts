@@ -210,10 +210,10 @@ class ThreadComputer {
         const minY = clamp(Math.floor(coords.y), 0, height - 1);
         const maxY = clamp(Math.ceil(coords.y), 0, height - 1);
 
-        const topLeft = this.hiddenCanvasData[4 * (minX + minY * width)];
-        const topRight = this.hiddenCanvasData[4 * (maxX + minY * width)];
-        const bottomLeft = this.hiddenCanvasData[4 * (minX + maxY * width)];
-        const bottomRight = this.hiddenCanvasData[4 * (maxX + maxY * width)];
+        const topLeft = this.sampleCanvasPixel(minX, minY);
+        const topRight = this.sampleCanvasPixel(maxX, minY);
+        const bottomLeft = this.sampleCanvasPixel(minX, maxY);
+        const bottomRight = this.sampleCanvasPixel(maxX, maxY);
 
         const fractX = coords.x % 1;
         const top = mix(topLeft, topRight, fractX);
@@ -221,6 +221,12 @@ class ThreadComputer {
 
         const fractY = coords.y % 1;
         return mix(top, bottom, fractY);
+    }
+
+    // no interpolation
+    private sampleCanvasPixel(pixelX: number, pixelY: number): number {
+        const base = 4 * (pixelX + pixelY * this.hiddenCanvas.width);
+        return (this.hiddenCanvasData[base] + this.hiddenCanvasData[base + 1] + this.hiddenCanvasData[base + 2]) / 3;
     }
 
     private static computeBestSize(sourceImageSize: ISize, maxSize: number): ISize {
