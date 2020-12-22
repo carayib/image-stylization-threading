@@ -23,9 +23,14 @@ function mix(a: number, b: number, x: number): number {
     return a * (1 - x) + b * x;
 }
 
+interface IPeg {
+    x: number;
+    y: number;
+}
+
 interface IThread {
-    peg1: IPoint;
-    peg2: IPoint;
+    peg1: IPeg;
+    peg2: IPeg;
 }
 
 /**
@@ -38,8 +43,8 @@ class ThreadComputer {
     private readonly hiddenCanvasContext: CanvasRenderingContext2D;
     private hiddenCanvasData: Uint8ClampedArray = null;
 
-    private readonly pegs: IPoint[];
-    private readonly threadPegs: IPoint[] = [];
+    private readonly pegs: IPeg[];
+    private readonly threadPegs: IPeg[] = [];
 
     public constructor(image: HTMLImageElement, pegsShape: EShape) {
         // this.sourceImage = image;
@@ -84,8 +89,8 @@ class ThreadComputer {
 
     public computeNextThreads(nbThreads: number): void {
         for (let iThread = 0; iThread < nbThreads; iThread++) {
-            let lastPeg: IPoint;
-            let nextPeg: IPoint;
+            let lastPeg: IPeg;
+            let nextPeg: IPeg;
 
             if (this.threadPegs.length === 0) {
                 const startingThread = this.computeBestStartingThread();
@@ -106,7 +111,7 @@ class ThreadComputer {
         return new Transformation(targetSize, this.hiddenCanvas);
     }
 
-    private drawThread(peg1: IPoint, peg2: IPoint): void {
+    private drawThread(peg1: IPeg, peg2: IPeg): void {
         this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255, ${LINE_OPACITY})`;
         this.hiddenCanvasContext.lineWidth = 1;
 
@@ -147,8 +152,8 @@ class ThreadComputer {
         return candidates[random];
     }
 
-    private computeBestNextPeg(currentPeg: IPoint): IPoint {
-        let candidates: IPoint[] = [];
+    private computeBestNextPeg(currentPeg: IPeg): IPeg {
+        let candidates: IPeg[] = [];
         let bestScore = MAX_SAFE_NUMBER;
 
         for (const peg of this.pegs) {
@@ -177,7 +182,7 @@ class ThreadComputer {
     }
 
     /* The lower the result, the better a choice the thread is. */
-    private computeThreadPotential(peg1: IPoint, peg2: IPoint): number {
+    private computeThreadPotential(peg1: IPeg, peg2: IPeg): number {
         this.uploadCanvasDataToCPU();
 
         let squaredError = 0;
@@ -242,8 +247,8 @@ class ThreadComputer {
         };
     }
 
-    private static computePegs(domainSize: ISize, nbPegs: number, pegsShape: EShape): IPoint[] {
-        const pegs: IPoint[] = [];
+    private static computePegs(domainSize: ISize, nbPegs: number, pegsShape: EShape): IPeg[] {
+        const pegs: IPeg[] = [];
 
         if (pegsShape === EShape.RECTANGLE) {
             const sidesTotalLength = 2 * (domainSize.width + domainSize.height);
