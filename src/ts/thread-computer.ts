@@ -45,6 +45,7 @@ class ThreadComputer {
 
     private readonly pegs: IPeg[];
     private readonly threadPegs: IPeg[] = [];
+    private arePegsTooClose: (peg1: IPeg, peg2: IPeg) => boolean;
 
     public constructor(image: HTMLImageElement, pegsShape: EShape) {
         // this.sourceImage = image;
@@ -57,7 +58,7 @@ class ThreadComputer {
         this.hiddenCanvas.height = hiddenCanvasSize.height;
         this.hiddenCanvasContext.drawImage(image, 0, 0, hiddenCanvasSize.width, hiddenCanvasSize.height);
 
-        this.pegs = ThreadComputer.computePegs(hiddenCanvasSize, NB_PEGS, pegsShape);
+        this.pegs = this.computePegs(hiddenCanvasSize, NB_PEGS, pegsShape);
     }
 
     public draw(targetContext: CanvasRenderingContext2D): void {
@@ -134,7 +135,7 @@ class ThreadComputer {
                 const peg1 = this.pegs[iPegId1];
                 const peg2 = this.pegs[iPegId2];
 
-                if (this.isNextPegValid(peg1, peg2)) {
+                if (!this.arePegsTooClose(peg1, peg2)) {
                     const candidateScore = this.computeThreadPotential(peg1, peg2);
                     if (candidateScore < bestScore) {
                         bestScore = candidateScore;
@@ -156,7 +157,7 @@ class ThreadComputer {
         let bestScore = MAX_SAFE_NUMBER;
 
         for (const peg of this.pegs) {
-            if (this.isNextPegValid(currentPeg, peg)) {
+            if (!this.arePegsTooClose(currentPeg, peg)) {
                 const candidateScore = this.computeThreadPotential(currentPeg, peg);
                 if (candidateScore < bestScore) {
                     bestScore = candidateScore;
@@ -233,13 +234,6 @@ class ThreadComputer {
         return (this.hiddenCanvasData[base] + this.hiddenCanvasData[base + 1] + this.hiddenCanvasData[base + 2]) / 3;
     }
 
-    private isNextPegValid(sourcePeg: IPeg, candidatePeg: IPeg): boolean {
-        if (sourcePeg === candidatePeg) {
-            return false;
-        }
-        return true;
-    }
-
     private static computeBestSize(sourceImageSize: ISize, maxSize: number): ISize {
         const maxSourceSide = Math.max(sourceImageSize.width, sourceImageSize.height);
         if (maxSourceSide <= MAX_SIZE) {
@@ -253,10 +247,14 @@ class ThreadComputer {
         };
     }
 
-    private static computePegs(domainSize: ISize, nbPegs: number, pegsShape: EShape): IPeg[] {
+    private computePegs(domainSize: ISize, nbPegs: number, pegsShape: EShape): IPeg[] {
         const pegs: IPeg[] = [];
 
         if (pegsShape === EShape.RECTANGLE) {
+            this.arePegsTooClose = (peg1: IPeg, peg2: IPeg) => {
+                return peg1.x === peg2.x || peg1.y === peg2.y;
+            };
+
             const sidesTotalLength = 2 * (domainSize.width + domainSize.height);
             const pegsSpacing = sidesTotalLength / nbPegs;
 
@@ -283,12 +281,24 @@ class ThreadComputer {
                 pegs.push({ x: maxX, y });
             }
         } else {
-            for (let iPeg = 0; iPeg < nbPegs; iPeg++) {
-                const angle = TWO_PI * iPeg / nbPegs;
-                pegs.push({
+            interface IPegCircle extends IPeg {
+                angle: number;
+            }
+
+            this.arePegsTooClose = (peg1: IPeg, peg2: IPeg) => {
+                const absDeltaAngle = Math.abs((peg1 as IPegCircle).angle - (peg2 as IPegCircle).angle);
+                const minAngle = Math.min(absDeltaAngle, TWO_PI - absDeltaAngle);
+                return minAngle <= TWO_PI / 16;
+            };
+
+            for (let iP = 0; iP < nbPegs; iP++) {
+                const angle = TWO_PI * iP / nbPegs;
+                const peg: IPegCircle = {
                     x: 0.5 * domainSize.width * (1 + Math.cos(angle)),
                     y: 0.5 * domainSize.height * (1 + Math.sin(angle)),
-                });
+                    angle: angle,
+                }
+                pegs.push(peg);
             }
         }
 
