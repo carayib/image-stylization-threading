@@ -23,6 +23,14 @@ function mix(a: number, b: number, x: number): number {
     return a * (1 - x) + b * x;
 }
 
+function randomItem<T>(list: T[]): T {
+    if (list.length === 0) {
+        return null;
+    }
+    const randomIndex = Math.floor(Math.random() * list.length);
+    return list[randomIndex];
+}
+
 interface IPeg {
     x: number;
     y: number;
@@ -147,9 +155,7 @@ class ThreadComputer {
             }
         }
 
-        // if several equally good candidates, choose randomly
-        const random = Math.floor(candidates.length * Math.random());
-        return candidates[random];
+        return randomItem(candidates);
     }
 
     private computeBestNextPeg(currentPeg: IPeg): IPeg {
@@ -168,9 +174,7 @@ class ThreadComputer {
             }
         }
 
-        // if several equally good candidates, choose randomly
-        const random = Math.floor(candidates.length * Math.random());
-        return candidates[random];
+        return randomItem(candidates);
     }
 
     private uploadCanvasDataToCPU(): void {
