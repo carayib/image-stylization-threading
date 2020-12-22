@@ -246,7 +246,31 @@ class ThreadComputer {
         const pegs: IPoint[] = [];
 
         if (pegsShape === EShape.RECTANGLE) {
+            const sidesTotalLength = 2 * (domainSize.width + domainSize.height);
+            const pegsSpacing = sidesTotalLength / nbPegs;
 
+            const maxX = domainSize.width - 1;
+            const maxY = domainSize.height - 1;
+            // corners
+            pegs.push({ x: 0, y: 0 });
+            pegs.push({ x: maxX, y: 0 });
+            pegs.push({ x: maxX, y: maxY });
+            pegs.push({ x: 0, y: maxY });
+
+            // sides
+            const nbPegsPerWidth = Math.ceil(domainSize.width / pegsSpacing);
+            for (let iW = 1; iW < nbPegsPerWidth; iW++) {
+                const x = maxX * (iW / nbPegsPerWidth);
+                pegs.push({ x, y: 0 });
+                pegs.push({ x, y: maxY });
+            }
+
+            const nbPegsPerHeight = Math.ceil(domainSize.height / pegsSpacing);
+            for (let iH = 1; iH < nbPegsPerHeight; iH++) {
+                const y = maxY * (iH / nbPegsPerHeight);
+                pegs.push({ x: 0, y });
+                pegs.push({ x: maxX, y });
+            }
         } else {
             for (let iPeg = 0; iPeg < nbPegs; iPeg++) {
                 const angle = TWO_PI * iPeg / nbPegs;
