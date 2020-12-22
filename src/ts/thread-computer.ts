@@ -168,7 +168,7 @@ class ThreadComputer {
                 if (candidateScore < bestScore) {
                     bestScore = candidateScore;
                     candidates = [peg];
-                } else if (candidateScore < bestScore) {
+                } else if (candidateScore === bestScore) {
                     candidates.push(peg);
                 }
             }
