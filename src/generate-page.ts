@@ -70,7 +70,7 @@ const data = {
                 },
                 {
                     type: Demopage.supportedControls.Range,
-                    title: "Pegs",
+                    title: "Pegs density",
                     id: "pegs-range-id",
                     min: 1,
                     max: 10,
@@ -99,7 +99,7 @@ const data = {
                 },
                 {
                     type: Demopage.supportedControls.Checkbox,
-                    title: "Invert",
+                    title: "Invert colors",
                     id: "invert-colors-checkbox-id",
                     checked: false
                 },
