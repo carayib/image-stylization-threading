@@ -77,7 +77,10 @@ class ThreadComputer {
         for (const peg of this.threadPegs) {
             points.push(transformation.transform(peg));
         }
-        plotter.drawBrokenLine(points, `rgba(0,0,0, ${LINE_OPACITY})`, lineWidth);
+
+        const baseColor = Parameters.invertColors ? "255,255,255" : "0,0,0";
+        const lineColor = `rgba(${baseColor}, ${LINE_OPACITY})`
+        plotter.drawBrokenLine(points, lineColor, lineWidth);
     }
 
     public drawPegs(plotter: PlotterBase): void {
@@ -166,13 +169,19 @@ class ThreadComputer {
         this.hiddenCanvas.height = wantedSize.height;
         this.hiddenCanvasContext.drawImage(this.sourceImage, 0, 0, wantedSize.width, wantedSize.height);
 
+        let computeAdjustedValue: (r: number, g: number, b: number) => number;
+        if (Parameters.invertColors) {
+            computeAdjustedValue = (r: number, g: number, b: number) => 128 - (r + g + b) / 3 / 2;
+        } else {
+            computeAdjustedValue = (r: number, g: number, b: number) => (r + g + b) / 3 / 2;
+        }
+
         // change the base level so that pure white becomes medium grey
         const imageData = this.hiddenCanvasContext.getImageData(0, 0, wantedSize.width, wantedSize.height);
         const canvasData = imageData.data;
         const nbPixels = wantedSize.width * wantedSize.height;
         for (let i = 0; i < nbPixels; i++) {
-            const value = (canvasData[4 * i + 0] + canvasData[4 * i + 1] + canvasData[4 * i + 2]) / 3;
-            const adjustedValue = 0.5 * value;
+            const adjustedValue = computeAdjustedValue(canvasData[4 * i + 0], canvasData[4 * i + 1], canvasData[4 * i + 2]);
             canvasData[4 * i + 0] = adjustedValue;
             canvasData[4 * i + 1] = adjustedValue;
             canvasData[4 * i + 2] = adjustedValue;

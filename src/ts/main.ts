@@ -2,7 +2,7 @@ import * as Helpers from "./helpers";
 
 import { Parameters } from "./parameters";
 
-import { PlotterBase } from "./plotter/plotter-base";
+import { IPlotterInfo, PlotterBase } from "./plotter/plotter-base";
 import { PlotterCanvas2D } from "./plotter/plotter-canvas-2d";
 import { PlotterSVG } from "./plotter/plotter-svg";
 
@@ -11,8 +11,13 @@ import { ThreadComputer } from "./thread-computer";
 import "./page-interface-generated";
 
 function plot(threadComputer: ThreadComputer, plotter: PlotterBase): void {
+    const plotterInfos: IPlotterInfo = {
+        backgroundColor: Parameters.invertColors ? "black": "white",
+        blur: Parameters.blur,
+    };
+
     plotter.resize();
-    plotter.initialize({ backgroundColor: "white", blur: 0 });
+    plotter.initialize(plotterInfos);
 
     if (Parameters.displayPegs) {
         threadComputer.drawPegs(plotter);

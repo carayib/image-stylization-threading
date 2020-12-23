@@ -7,7 +7,7 @@ const controlId = {
     SHAPE: "shape-tabs-id",
     NB_PEGS: "pegs-range-id",
     DISPLAY_PEGS: "display-pegs-checkbox-id",
-    // INVERT_COLORS: "invert-colors-checkbox-id",
+    INVERT_COLORS: "invert-colors-checkbox-id",
     BLUR: "blur-range-id",
     DOWNLOAD: "result-download-id",
 };
@@ -35,7 +35,7 @@ function triggerReset(): void {
 Page.Tabs.addObserver(controlId.SHAPE, triggerReset);
 Page.Range.addLazyObserver(controlId.NB_PEGS, triggerReset);
 Page.Checkbox.addObserver(controlId.DISPLAY_PEGS, triggerRedraw);
-// Page.Checkbox.addObserver(controlId.INVERT_COLORS, triggerRedraw);
+Page.Checkbox.addObserver(controlId.INVERT_COLORS, triggerReset);
 Page.Canvas.Observers.canvasResize.push(triggerRedraw);
 
 const isInDebug = Helpers.getQueryStringValue("debug") === "1";
@@ -74,9 +74,9 @@ abstract class Parameters {
         return Page.Checkbox.isChecked(controlId.DISPLAY_PEGS);
     }
 
-    // public static get invertColors(): boolean {
-    //     return Page.Checkbox.isChecked(controlId.INVERT_COLORS);
-    // }
+    public static get invertColors(): boolean {
+        return Page.Checkbox.isChecked(controlId.INVERT_COLORS);
+    }
 
     public static addRedrawObserver(callback: Observer): void {
         redrawObservers.push(callback);
