@@ -157,7 +157,7 @@ class ThreadComputer {
         }
 
         this.threadPegs.push(nextPeg);
-        this.drawThread(lastPeg, nextPeg);
+        this.drawThreadOnHiddenCanvas(lastPeg, nextPeg);
     }
 
     private resetHiddenCanvas(): void {
@@ -165,14 +165,28 @@ class ThreadComputer {
         this.hiddenCanvas.width = wantedSize.width;
         this.hiddenCanvas.height = wantedSize.height;
         this.hiddenCanvasContext.drawImage(this.sourceImage, 0, 0, wantedSize.width, wantedSize.height);
+
+        // change the base level so that pure white becomes medium grey
+        const imageData = this.hiddenCanvasContext.getImageData(0, 0, wantedSize.width, wantedSize.height);
+        const canvasData = imageData.data;
+        const nbPixels = wantedSize.width * wantedSize.height;
+        for (let i = 0; i < nbPixels; i++) {
+            const value = (canvasData[4 * i + 0] + canvasData[4 * i + 1] + canvasData[4 * i + 2]) / 3;
+            const adjustedValue = 0.5 * value;
+            canvasData[4 * i + 0] = adjustedValue;
+            canvasData[4 * i + 1] = adjustedValue;
+            canvasData[4 * i + 2] = adjustedValue;
+        }
+        this.hiddenCanvasContext.putImageData(imageData, 0, 0);
+
     }
 
     private computeTransformation(targetSize: ISize): Transformation {
         return new Transformation(targetSize, this.hiddenCanvas);
     }
 
-    private drawThread(peg1: IPeg, peg2: IPeg): void {
-        this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255, ${LINE_OPACITY})`;
+    private drawThreadOnHiddenCanvas(peg1: IPeg, peg2: IPeg): void {
+        this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255, ${0.5 * LINE_OPACITY})`;
         this.hiddenCanvasContext.lineWidth = 1;
 
         this.hiddenCanvasContext.beginPath();
@@ -254,8 +268,8 @@ class ThreadComputer {
             };
 
             const imageValue = this.sampleCanvasData(sample);
-            const finalValue = imageValue + (LINE_OPACITY * 255);
-            const contribution = 255 - finalValue;
+            const finalValue = imageValue + (0.5 * LINE_OPACITY * 255);
+            const contribution = 127 - finalValue;
             squaredError += contribution;
         }
         return squaredError / nbSamples;
