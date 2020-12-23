@@ -1,10 +1,10 @@
 import { IPoint } from "./interfaces/i-point";
 import { ISize } from "./interfaces/i-size";
-import { EShape } from "./parameters";
+import { EShape, Parameters } from "./parameters";
 import { PlotterBase } from "./plotter/plotter-base";
 import { Transformation } from "./transformation";
 
-const MAX_SAFE_NUMBER = 9007199254740991;
+const MIN_SAFE_NUMBER = -9007199254740991;
 const MAX_SIZE = 256; // pixels
 const TWO_PI = 2 * Math.PI;
 const LINE_OPACITY = 0.512 / 8;
@@ -44,30 +44,32 @@ interface IThread {
  * Class used to compute which thread is the best choice.
  */
 class ThreadComputer {
-    // private readonly sourceImage: HTMLImageElement;
+    public targetNbSegments: number = 0;
 
+    private readonly sourceImage: HTMLImageElement;
     private readonly hiddenCanvas: HTMLCanvasElement;
     private readonly hiddenCanvasContext: CanvasRenderingContext2D;
     private hiddenCanvasData: Uint8ClampedArray = null;
 
-    private readonly pegs: IPeg[];
-    private readonly threadPegs: IPeg[] = [];
+    private pegsShape: EShape;
+    private pegsSpacing: number;
+    private pegs: IPeg[] = [];
+    private threadPegs: IPeg[] = [];
     private arePegsTooClose: (peg1: IPeg, peg2: IPeg) => boolean;
 
     public constructor(image: HTMLImageElement, pegsShape: EShape, pegsSpacing: number) {
-        // this.sourceImage = image;
+        this.sourceImage = image;
 
         this.hiddenCanvas = document.createElement("canvas");
         this.hiddenCanvasContext = this.hiddenCanvas.getContext("2d");
+        this.resetHiddenCanvas();
 
-        const hiddenCanvasSize = ThreadComputer.computeBestSize(image, MAX_SIZE);
-        this.hiddenCanvas.width = hiddenCanvasSize.width;
-        this.hiddenCanvas.height = hiddenCanvasSize.height;
-        this.hiddenCanvasContext.drawImage(image, 0, 0, hiddenCanvasSize.width, hiddenCanvasSize.height);
-
-        this.pegs = this.computePegs(hiddenCanvasSize, pegsShape, pegsSpacing);
+        this.pegsShape = pegsShape;
+        this.pegsSpacing = pegsSpacing;
+        this.pegs = this.computePegs();
     }
 
+    // for debugging
     public draw(targetContext: CanvasRenderingContext2D): void {
         const transformation = this.computeTransformation(targetContext.canvas);
         targetContext.drawImage(this.hiddenCanvas, transformation.origin.x, transformation.origin.y, transformation.scaling * this.hiddenCanvas.width, transformation.scaling * this.hiddenCanvas.height);
@@ -92,27 +94,32 @@ class ThreadComputer {
         for (const peg of this.pegs) {
             points.push(transformation.transform(peg));
         }
+        if (points.length > this.targetNbSegments) {
+            points.length = this.targetNbSegments;
+        }
+
         plotter.drawPoints(points, "red", pointSize);
     }
 
-    public computeNextThreads(nbThreads: number): void {
-        for (let iThread = 0; iThread < nbThreads; iThread++) {
-            let lastPeg: IPeg;
-            let nextPeg: IPeg;
+    /** Returns true if there is nothing more to compute */
+    public computeNextThreads(maxMillisecondsTaken: number): boolean {
+        const start = performance.now();
 
-            if (this.threadPegs.length === 0) {
-                const startingThread = this.computeBestStartingThread();
-                this.threadPegs.push(startingThread.peg1);
-                lastPeg = startingThread.peg1;
-                nextPeg = startingThread.peg2;
-            } else {
-                lastPeg = this.threadPegs[this.threadPegs.length - 1];
-                nextPeg = this.computeBestNextPeg(lastPeg);
-            }
-
-            this.threadPegs.push(nextPeg);
-            this.drawThread(lastPeg, nextPeg);
+        while (this.nbSegments < this.targetNbSegments && performance.now() - start < maxMillisecondsTaken) {
+            this.computeThread();
         }
+
+        return this.nbSegments >= this.targetNbSegments;
+    }
+
+    /** Returns true if at least one parameter changed */
+    public reset(): void {
+        this.targetNbSegments = 4000;
+        this.pegsShape = Parameters.shape;
+        this.pegsSpacing = Parameters.pegsSpacing;
+        this.pegs = this.computePegs();
+        this.threadPegs = [];
+        this.resetHiddenCanvas();
     }
 
     public get nbPegs(): number {
@@ -137,6 +144,31 @@ class ThreadComputer {
         return baseLength * transformation.scaling;
     }
 
+    private computeThread(): void {
+        let lastPeg: IPeg;
+        let nextPeg: IPeg;
+
+        if (this.threadPegs.length === 0) {
+            const startingThread = this.computeBestStartingThread();
+            this.threadPegs.push(startingThread.peg1);
+            lastPeg = startingThread.peg1;
+            nextPeg = startingThread.peg2;
+        } else {
+            lastPeg = this.threadPegs[this.threadPegs.length - 1];
+            nextPeg = this.computeBestNextPeg(lastPeg);
+        }
+
+        this.threadPegs.push(nextPeg);
+        this.drawThread(lastPeg, nextPeg);
+    }
+
+    private resetHiddenCanvas(): void {
+        const wantedSize = ThreadComputer.computeBestSize(this.sourceImage, MAX_SIZE);
+        this.hiddenCanvas.width = wantedSize.width;
+        this.hiddenCanvas.height = wantedSize.height;
+        this.hiddenCanvasContext.drawImage(this.sourceImage, 0, 0, wantedSize.width, wantedSize.height);
+    }
+
     private computeTransformation(targetSize: ISize): Transformation {
         return new Transformation(targetSize, this.hiddenCanvas);
     }
@@ -157,7 +189,7 @@ class ThreadComputer {
 
     private computeBestStartingThread(): IThread {
         let candidates: IThread[] = [];
-        let bestScore = MAX_SAFE_NUMBER;
+        let bestScore = MIN_SAFE_NUMBER;
 
         for (let iPegId1 = 0; iPegId1 < this.pegs.length; iPegId1++) {
             for (let iPegId2 = iPegId1 + 1; iPegId2 < this.pegs.length; iPegId2++) {
@@ -166,7 +198,7 @@ class ThreadComputer {
 
                 if (!this.arePegsTooClose(peg1, peg2)) {
                     const candidateScore = this.computeThreadPotential(peg1, peg2);
-                    if (candidateScore < bestScore) {
+                    if (candidateScore > bestScore) {
                         bestScore = candidateScore;
                         candidates = [{ peg1, peg2, }];
                     } else if (candidateScore === bestScore) {
@@ -181,12 +213,12 @@ class ThreadComputer {
 
     private computeBestNextPeg(currentPeg: IPeg): IPeg {
         let candidates: IPeg[] = [];
-        let bestScore = MAX_SAFE_NUMBER;
+        let bestScore = MIN_SAFE_NUMBER;
 
         for (const peg of this.pegs) {
             if (!this.arePegsTooClose(currentPeg, peg)) {
                 const candidateScore = this.computeThreadPotential(currentPeg, peg);
-                if (candidateScore < bestScore) {
+                if (candidateScore > bestScore) {
                     bestScore = candidateScore;
                     candidates = [peg];
                 } else if (candidateScore === bestScore) {
@@ -206,7 +238,7 @@ class ThreadComputer {
         }
     }
 
-    /* The lower the result, the better a choice the thread is. */
+    /* The higher the result, the better a choice the thread is. */
     private computeThreadPotential(peg1: IPeg, peg2: IPeg): number {
         this.uploadCanvasDataToCPU();
 
@@ -224,8 +256,9 @@ class ThreadComputer {
             };
 
             const imageValue = this.sampleCanvasData(sample);
-            const finalValue = 128 * (imageValue + (LINE_OPACITY * 255));
-            squaredError += finalValue;
+            const finalValue = imageValue + (LINE_OPACITY * 255);
+            const contribution = 255 - finalValue;
+            squaredError += contribution;
         }
         return squaredError / nbSamples;
     }
@@ -272,10 +305,11 @@ class ThreadComputer {
         };
     }
 
-    private computePegs(domainSize: ISize, pegsShape: EShape, pegsSpacing: number): IPeg[] {
+    private computePegs(): IPeg[] {
+        const domainSize: ISize = this.hiddenCanvas;
         const pegs: IPeg[] = [];
 
-        if (pegsShape === EShape.RECTANGLE) {
+        if (this.pegsShape === EShape.RECTANGLE) {
             this.arePegsTooClose = (peg1: IPeg, peg2: IPeg) => {
                 return peg1.x === peg2.x || peg1.y === peg2.y;
             };
@@ -289,14 +323,14 @@ class ThreadComputer {
             pegs.push({ x: 0, y: maxY });
 
             // sides
-            const nbPegsPerWidth = Math.ceil(domainSize.width / pegsSpacing);
+            const nbPegsPerWidth = Math.ceil(domainSize.width / this.pegsSpacing);
             for (let iW = 1; iW < nbPegsPerWidth; iW++) {
                 const x = maxX * (iW / nbPegsPerWidth);
                 pegs.push({ x, y: 0 });
                 pegs.push({ x, y: maxY });
             }
 
-            const nbPegsPerHeight = Math.ceil(domainSize.height / pegsSpacing);
+            const nbPegsPerHeight = Math.ceil(domainSize.height / this.pegsSpacing);
             for (let iH = 1; iH < nbPegsPerHeight; iH++) {
                 const y = maxY * (iH / nbPegsPerHeight);
                 pegs.push({ x: 0, y });
@@ -313,7 +347,7 @@ class ThreadComputer {
                 return minAngle <= TWO_PI / 16;
             };
 
-            const nbPegs = Math.ceil(0.5 * TWO_PI * MAX_SIZE / pegsSpacing);
+            const nbPegs = Math.ceil(0.5 * TWO_PI * MAX_SIZE / this.pegsSpacing);
             const baseDeltaAngle = TWO_PI / nbPegs;
             for (let iPeg = 0; iPeg < nbPegs; iPeg++) {
                 const angle = iPeg * baseDeltaAngle;

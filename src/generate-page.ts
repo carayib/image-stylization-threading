@@ -88,12 +88,12 @@ const data = {
                     id: "display-pegs-checkbox-id",
                     checked: false
                 },
-                {
-                    type: Demopage.supportedControls.Checkbox,
-                    title: "Invert",
-                    id: "invert-colors-checkbox-id",
-                    checked: false
-                },
+                // {
+                //     type: Demopage.supportedControls.Checkbox,
+                //     title: "Invert",
+                //     id: "invert-colors-checkbox-id",
+                //     checked: false
+                // },
                 {
                     type: Demopage.supportedControls.Range,
                     title: "Blur",

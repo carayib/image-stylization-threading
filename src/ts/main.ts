@@ -1,31 +1,18 @@
 import * as Helpers from "./helpers";
-import { InputImage } from "./input-image";
+
 import { Parameters } from "./parameters";
 
 import { PlotterBase } from "./plotter/plotter-base";
 import { PlotterCanvas2D } from "./plotter/plotter-canvas-2d";
 import { PlotterSVG } from "./plotter/plotter-svg";
 
-import "./page-interface-generated";
 import { ThreadComputer } from "./thread-computer";
 
-function plot(image: InputImage, plotter: PlotterBase): void {
-    const start = performance.now();
+import "./page-interface-generated";
 
-    if (image == null) {
-        console.log("Image not loaded!");
-        return;
-    }
-
+function plot(threadComputer: ThreadComputer, plotter: PlotterBase): void {
     plotter.resize();
     plotter.initialize({ backgroundColor: "white", blur: 0 });
-
-    const threadComputer = new ThreadComputer(image.sourceImage, Parameters.shape, Parameters.pegsSpacing);
-    threadComputer.computeNextThreads(2);
-
-    Page.Canvas.setIndicatorText("pegs-count", threadComputer.nbPegs.toString());
-    Page.Canvas.setIndicatorText("segments-count", threadComputer.nbSegments.toString());
-    Page.Canvas.setIndicatorText("thread-length", threadComputer.threadLength(plotter).toFixed(0) + " pixels");
 
     if (Parameters.displayPegs) {
         threadComputer.drawPegs(plotter);
@@ -33,41 +20,70 @@ function plot(image: InputImage, plotter: PlotterBase): void {
     threadComputer.drawThreads(plotter);
 
     plotter.finalize();
-    console.log(`Plotting took ${performance.now() - start} ms.`);
 }
 
-let inputImage: InputImage = null;
-const canvasPlotter = new PlotterCanvas2D();
+function main(): void {
+    const canvasPlotter = new PlotterCanvas2D();
+    let threadComputer: ThreadComputer = null;
+    let needToRedraw = true;
+    let needToReset = true;
 
-function plotOnCanvas(): void {
-    plot(inputImage, canvasPlotter);
+    Parameters.addRedrawObserver(() => needToRedraw = true);
+    Parameters.addResetObserver(() => needToReset = true);
+
+    function mainLoop(): void {
+        if (threadComputer !== null) {
+            if (needToReset) {
+                threadComputer.reset();
+                needToReset = false;
+                needToRedraw = true;
+            }
+
+            const computedEverything = threadComputer.computeNextThreads(20);
+            needToRedraw = needToRedraw || computedEverything;
+
+            if (needToRedraw) {
+                plot(threadComputer, canvasPlotter);
+                needToRedraw = !computedEverything;
+
+                Page.Canvas.setIndicatorText("pegs-count", threadComputer.nbPegs.toString());
+                Page.Canvas.setIndicatorText("segments-count", threadComputer.nbSegments.toString());
+                Page.Canvas.setIndicatorText("thread-length", threadComputer.threadLength(canvasPlotter).toFixed(0) + " pixels");
+            }
+        }
+
+        requestAnimationFrame(mainLoop);
+    }
+    requestAnimationFrame(mainLoop);
+
+    function updateBlur(blur: number): void {
+        canvasPlotter.blur = blur;
+    }
+    Parameters.addBlurChangeObserver(updateBlur);
+    updateBlur(Parameters.blur);
+
+
+    function onNewImage(image: HTMLImageElement): void {
+        Page.Canvas.showLoader(false);
+        threadComputer = new ThreadComputer(image, Parameters.shape, Parameters.pegsSpacing);
+        needToReset = true;
+    }
+    Parameters.addFileUploadObserver(onNewImage);
+
+    Page.Canvas.showLoader(true);
+    const defaultImage = new Image();
+    defaultImage.addEventListener("load", () => {
+        onNewImage(defaultImage);
+    });
+    defaultImage.src = "./resources/cat.jpg";
+
+    Parameters.addDownloadObserver(() => {
+        const svgPlotter = new PlotterSVG();
+        plot(threadComputer, svgPlotter);
+        const svgString = svgPlotter.export();
+        const filename = "image-as-threading.svg";
+        Helpers.downloadTextFile(svgString, filename);
+    });
 }
-Parameters.addRedrawObserver(plotOnCanvas);
 
-function updateBlur(blur: number): void {
-    canvasPlotter.blur = blur;
-}
-Parameters.addBlurChangeObserver(updateBlur);
-updateBlur(Parameters.blur);
-
-Parameters.addDownloadObserver(() => {
-    const svgPlotter = new PlotterSVG();
-    plot(inputImage, svgPlotter);
-    const svgString = svgPlotter.export();
-    const filename = "image-as-threading.svg";
-    Helpers.downloadTextFile(svgString, filename);
-});
-
-function onImageLoad(image: HTMLImageElement): void {
-    inputImage = new InputImage(image);
-    Page.Canvas.showLoader(false);
-    plotOnCanvas();
-}
-Parameters.addFileUploadObserver(onImageLoad);
-
-Page.Canvas.showLoader(true);
-const defaultImage = new Image();
-defaultImage.addEventListener("load", () => {
-    onImageLoad(defaultImage);
-});
-defaultImage.src = "./resources/cat.jpg";
+main();

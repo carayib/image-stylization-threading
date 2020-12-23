@@ -5,7 +5,7 @@ const controlId = {
     SHAPE: "shape-tabs-id",
     NB_PEGS: "pegs-range-id",
     DISPLAY_PEGS: "display-pegs-checkbox-id",
-    INVERT_COLORS: "invert-colors-checkbox-id",
+    // INVERT_COLORS: "invert-colors-checkbox-id",
     BLUR: "blur-range-id",
     DOWNLOAD: "result-download-id",
 };
@@ -15,18 +15,25 @@ enum EShape {
     ELLIPSIS = "1",
 }
 
-type RedrawObserver = () => unknown;
-const redrawObservers: RedrawObserver[] = [];
+type Observer = () => unknown;
+const redrawObservers: Observer[] = [];
 function triggerRedraw(): void {
     for (const observer of redrawObservers) {
         observer();
     }
 }
 
-Page.Tabs.addObserver(controlId.SHAPE, triggerRedraw);
-Page.Range.addLazyObserver(controlId.NB_PEGS, triggerRedraw);
+const resetObservers: Observer[] = [];
+function triggerReset(): void {
+    for (const observer of resetObservers) {
+        observer();
+    }
+}
+
+Page.Tabs.addObserver(controlId.SHAPE, triggerReset);
+Page.Range.addLazyObserver(controlId.NB_PEGS, triggerReset);
 Page.Checkbox.addObserver(controlId.DISPLAY_PEGS, triggerRedraw);
-Page.Checkbox.addObserver(controlId.INVERT_COLORS, triggerRedraw);
+// Page.Checkbox.addObserver(controlId.INVERT_COLORS, triggerRedraw);
 Page.Canvas.Observers.canvasResize.push(triggerRedraw);
 
 abstract class Parameters {
@@ -59,12 +66,16 @@ abstract class Parameters {
         return Page.Checkbox.isChecked(controlId.DISPLAY_PEGS);
     }
 
-    public static get invertColors(): boolean {
-        return Page.Checkbox.isChecked(controlId.INVERT_COLORS);
+    // public static get invertColors(): boolean {
+    //     return Page.Checkbox.isChecked(controlId.INVERT_COLORS);
+    // }
+
+    public static addRedrawObserver(callback: Observer): void {
+        redrawObservers.push(callback);
     }
 
-    public static addRedrawObserver(callback: RedrawObserver): void {
-        redrawObservers.push(callback);
+    public static addResetObserver(callback: Observer): void {
+        resetObservers.push(callback);
     }
 
     public static get blur(): number {
