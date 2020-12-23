@@ -315,8 +315,8 @@ class ThreadComputer {
 
     // no interpolation
     private sampleCanvasPixel(pixelX: number, pixelY: number): number {
-        const base = 4 * (pixelX + pixelY * this.hiddenCanvas.width);
-        return (this.hiddenCanvasData[base] + this.hiddenCanvasData[base + 1] + this.hiddenCanvasData[base + 2]) / 3;
+        const index = 4 * (pixelX + pixelY * this.hiddenCanvas.width);
+        return this.hiddenCanvasData[index]; // only check the red channel because the hidden canvas is in black and white
     }
 
     private static computeBestSize(sourceImageSize: ISize, maxSize: number): ISize {
