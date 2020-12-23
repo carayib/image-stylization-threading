@@ -106,17 +106,19 @@ class ThreadComputer {
     public computeNextThreads(maxMillisecondsTaken: number): boolean {
         const start = performance.now();
 
-        if (this.nbSegments > Parameters.nbLines) {
-            // if we draw too many lines already
-            this.reset();
-        }
         this.targetNbSegments = Parameters.nbLines;
+        if (this.nbSegments > this.targetNbSegments) {
+            // if we drew too many lines already
+            this.reset();
+        } else if (this.nbSegments === this.targetNbSegments) {
+            return false;
+        }
 
         while (this.nbSegments < this.targetNbSegments && performance.now() - start < maxMillisecondsTaken) {
             this.computeThread();
         }
 
-        return this.nbSegments >= this.targetNbSegments;
+        return true;
     }
 
     /** Returns true if at least one parameter changed */

@@ -44,12 +44,12 @@ function main(): void {
                 needToRedraw = true;
             }
 
-            const computedEverything = threadComputer.computeNextThreads(20);
-            needToRedraw = needToRedraw || computedEverything;
+            const computedSomething = threadComputer.computeNextThreads(20);
+            needToRedraw = needToRedraw || computedSomething;
 
             if (needToRedraw) {
                 plot(threadComputer, canvasPlotter);
-                needToRedraw = !computedEverything;
+                needToRedraw = !computedSomething;
 
                 Page.Canvas.setIndicatorText("pegs-count", threadComputer.nbPegs.toString());
                 Page.Canvas.setIndicatorText("segments-count", threadComputer.nbSegments.toString());
