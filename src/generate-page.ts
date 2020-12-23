@@ -77,6 +77,15 @@ const data = {
                     value: 10,
                     step: 0.5
                 },
+                {
+                    type: Demopage.supportedControls.Range,
+                    title: "Lines",
+                    id: "lines-range-id",
+                    min: 1,
+                    max: 20,
+                    value: 6,
+                    step: 1
+                },
             ]
         },
         {

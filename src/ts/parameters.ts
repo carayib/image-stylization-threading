@@ -6,6 +6,7 @@ const controlId = {
     UPLOAD_INPUT_IMAGE: "input-image-upload-button",
     SHAPE: "shape-tabs-id",
     NB_PEGS: "pegs-range-id",
+    NB_LINES: "lines-range-id",
     DISPLAY_PEGS: "display-pegs-checkbox-id",
     INVERT_COLORS: "invert-colors-checkbox-id",
     BLUR: "blur-range-id",
@@ -68,6 +69,10 @@ abstract class Parameters {
 
     public static get pegsSpacing(): number {
         return 11 - Page.Range.getValue(controlId.NB_PEGS);
+    }
+
+    public static get nbLines(): number {
+        return 500 * Page.Range.getValue(controlId.NB_LINES);
     }
 
     public static get displayPegs(): boolean {
