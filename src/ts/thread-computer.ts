@@ -108,9 +108,9 @@ class ThreadComputer {
             } else {
                 lastPeg = this.threadPegs[this.threadPegs.length - 1];
                 nextPeg = this.computeBestNextPeg(lastPeg);
-                this.threadPegs.push(nextPeg);
             }
-
+            
+            this.threadPegs.push(nextPeg);
             this.drawThread(lastPeg, nextPeg);
         }
     }
