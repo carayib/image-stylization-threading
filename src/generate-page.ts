@@ -21,6 +21,10 @@ const data = {
             id: "pegs-count",
             label: "Pegs count"
         },
+        {
+            id: "segments-count",
+            label: "Segments count"
+        },
     ],
     canvas: {
         width: 512,

@@ -20,10 +20,11 @@ function plot(image: InputImage, plotter: PlotterBase): void {
     plotter.resize();
     plotter.initialize({ backgroundColor: "white", blur: 0 });
 
-    threadComputer.computeNextThreads(2000);
     const threadComputer = new ThreadComputer(image.sourceImage, Parameters.shape, Parameters.pegsSpacing);
-    Page.Canvas.setIndicatorText("pegs-count", threadComputer.nbPegs.toString());
+    threadComputer.computeNextThreads(2);
 
+    Page.Canvas.setIndicatorText("pegs-count", threadComputer.nbPegs.toString());
+    Page.Canvas.setIndicatorText("segments-count", threadComputer.nbSegments.toString());
 
     if (Parameters.displayPegs) {
         threadComputer.drawPegs(plotter);
