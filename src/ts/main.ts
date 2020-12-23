@@ -50,6 +50,10 @@ function main(): void {
                 Page.Canvas.setIndicatorText("segments-count", threadComputer.nbSegments.toString());
                 Page.Canvas.setIndicatorText("thread-length", threadComputer.threadLength(canvasPlotter).toFixed(0) + " pixels");
             }
+
+            if (Parameters.debug) {
+                threadComputer.drawDebugView(canvasPlotter.context);
+            }
         }
 
         requestAnimationFrame(mainLoop);

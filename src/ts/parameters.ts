@@ -1,3 +1,5 @@
+import * as Helpers from "./helpers";
+
 import "./page-interface-generated";
 
 const controlId = {
@@ -36,6 +38,8 @@ Page.Checkbox.addObserver(controlId.DISPLAY_PEGS, triggerRedraw);
 // Page.Checkbox.addObserver(controlId.INVERT_COLORS, triggerRedraw);
 Page.Canvas.Observers.canvasResize.push(triggerRedraw);
 
+const isInDebug = Helpers.getQueryStringValue("debug") === "1";
+
 abstract class Parameters {
     public static addFileUploadObserver(callback: (image: HTMLImageElement) => unknown): void {
         Page.FileControl.addUploadObserver(controlId.UPLOAD_INPUT_IMAGE, (filesList: FileList) => {
@@ -52,6 +56,10 @@ abstract class Parameters {
                 reader.readAsDataURL(filesList[0]);
             }
         });
+    }
+
+    public static get debug(): boolean {
+        return isInDebug;
     }
 
     public static get shape(): EShape {

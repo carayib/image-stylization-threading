@@ -69,12 +69,6 @@ class ThreadComputer {
         this.pegs = this.computePegs();
     }
 
-    // for debugging
-    public draw(targetContext: CanvasRenderingContext2D): void {
-        const transformation = this.computeTransformation(targetContext.canvas);
-        targetContext.drawImage(this.hiddenCanvas, transformation.origin.x, transformation.origin.y, transformation.scaling * this.hiddenCanvas.width, transformation.scaling * this.hiddenCanvas.height);
-    }
-
     public drawThreads(plotter: PlotterBase): void {
         const transformation = this.computeTransformation(plotter.size);
         const lineWidth = 1 * transformation.scaling;
@@ -99,6 +93,10 @@ class ThreadComputer {
         }
 
         plotter.drawPoints(points, "red", pointSize);
+    }
+
+    public drawDebugView(targetContext: CanvasRenderingContext2D): void {
+        targetContext.drawImage(this.hiddenCanvas, 0, 0, this.hiddenCanvas.width, this.hiddenCanvas.height);
     }
 
     /** Returns true if there is nothing more to compute */

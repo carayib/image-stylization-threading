@@ -7,7 +7,7 @@ import { ILine } from "../interfaces/i-line";
 
 class PlotterCanvas2D extends PlotterBase {
     private readonly canvas: HTMLCanvasElement;
-    private readonly context: CanvasRenderingContext2D;
+    public readonly context: CanvasRenderingContext2D;
     private readonly cssPixel: number;
 
     public constructor() {
