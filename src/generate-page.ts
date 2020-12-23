@@ -121,15 +121,6 @@ const data = {
                     value: 0,
                     step: 1
                 },
-                {
-                    type: Demopage.supportedControls.Range,
-                    title: "Start",
-                    id: "start-range-id",
-                    min: 1,
-                    max: 50,
-                    value: 1,
-                    step: 1
-                },
             ]
         },
         {
