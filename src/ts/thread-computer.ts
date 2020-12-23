@@ -5,7 +5,7 @@ import { PlotterBase } from "./plotter/plotter-base";
 import { Transformation } from "./transformation";
 
 const MIN_SAFE_NUMBER = -9007199254740991;
-const MAX_SIZE = 256; // pixels
+const HIDDEN_CANVAS_SIZE = 256; // pixels
 const TWO_PI = 2 * Math.PI;
 const LINE_OPACITY = 0.512 / 8;
 
@@ -161,7 +161,7 @@ class ThreadComputer {
     }
 
     private resetHiddenCanvas(): void {
-        const wantedSize = ThreadComputer.computeBestSize(this.sourceImage, MAX_SIZE);
+        const wantedSize = ThreadComputer.computeBestSize(this.sourceImage, HIDDEN_CANVAS_SIZE);
         this.hiddenCanvas.width = wantedSize.width;
         this.hiddenCanvas.height = wantedSize.height;
         this.hiddenCanvasContext.drawImage(this.sourceImage, 0, 0, wantedSize.width, wantedSize.height);
@@ -306,14 +306,10 @@ class ThreadComputer {
 
     private static computeBestSize(sourceImageSize: ISize, maxSize: number): ISize {
         const maxSourceSide = Math.max(sourceImageSize.width, sourceImageSize.height);
-        if (maxSourceSide <= MAX_SIZE) {
-            return sourceImageSize;
-        }
-
-        const downsizingFactor = maxSize / maxSourceSide;
+        const sizingFactor = maxSize / maxSourceSide;
         return {
-            width: Math.ceil(sourceImageSize.width * downsizingFactor),
-            height: Math.ceil(sourceImageSize.height * downsizingFactor),
+            width: Math.ceil(sourceImageSize.width * sizingFactor),
+            height: Math.ceil(sourceImageSize.height * sizingFactor),
         };
     }
 
@@ -359,7 +355,8 @@ class ThreadComputer {
                 return minAngle <= TWO_PI / 16;
             };
 
-            const nbPegs = Math.ceil(0.5 * TWO_PI * MAX_SIZE / this.pegsSpacing);
+            const maxSize = Math.max(this.hiddenCanvas.width, this.hiddenCanvas.height);
+            const nbPegs = Math.ceil(0.5 * TWO_PI * maxSize / this.pegsSpacing);
             const baseDeltaAngle = TWO_PI / nbPegs;
             for (let iPeg = 0; iPeg < nbPegs; iPeg++) {
                 const angle = iPeg * baseDeltaAngle;
