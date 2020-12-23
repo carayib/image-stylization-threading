@@ -4,9 +4,7 @@ const controlId = {
     UPLOAD_INPUT_IMAGE: "input-image-upload-button",
     SHAPE: "shape-tabs-id",
     NB_PEGS: "pegs-range-id",
-    INTENSITY: "intensity-range-id",
     DISPLAY_PEGS: "display-pegs-checkbox-id",
-    LINE_THICKNESS: "line-thickness-range-id",
     INVERT_COLORS: "invert-colors-checkbox-id",
     BLUR: "blur-range-id",
     DOWNLOAD: "result-download-id",
@@ -27,9 +25,7 @@ function triggerRedraw(): void {
 
 Page.Tabs.addObserver(controlId.SHAPE, triggerRedraw);
 Page.Range.addLazyObserver(controlId.NB_PEGS, triggerRedraw);
-Page.Range.addObserver(controlId.INTENSITY, triggerRedraw);
 Page.Checkbox.addObserver(controlId.DISPLAY_PEGS, triggerRedraw);
-Page.Range.addLazyObserver(controlId.LINE_THICKNESS, triggerRedraw);
 Page.Checkbox.addObserver(controlId.INVERT_COLORS, triggerRedraw);
 Page.Canvas.Observers.canvasResize.push(triggerRedraw);
 
@@ -59,17 +55,8 @@ abstract class Parameters {
         return 11 - Page.Range.getValue(controlId.NB_PEGS);
     }
 
-    public static get intensity(): number {
-        const rawIntensity = Page.Range.getValue(controlId.INTENSITY);
-        return rawIntensity * 100;
-    }
-
     public static get displayPegs(): boolean {
         return Page.Checkbox.isChecked(controlId.DISPLAY_PEGS);
-    }
-
-    public static get lineThickness(): number {
-        return Page.Range.getValue(controlId.LINE_THICKNESS);
     }
 
     public static get invertColors(): boolean {

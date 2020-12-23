@@ -77,15 +77,6 @@ const data = {
                     value: 10,
                     step: 0.5
                 },
-                {
-                    type: Demopage.supportedControls.Range,
-                    title: "Intensity",
-                    id: "intensity-range-id",
-                    min: 1,
-                    max: 100,
-                    value: 1,
-                    step: 1
-                },
             ]
         },
         {
@@ -96,15 +87,6 @@ const data = {
                     title: "Pegs",
                     id: "display-pegs-checkbox-id",
                     checked: false
-                },
-                {
-                    type: Demopage.supportedControls.Range,
-                    title: "Thickness",
-                    id: "line-thickness-range-id",
-                    min: 1,
-                    max: 10,
-                    value: 1,
-                    step: 0.5
                 },
                 {
                     type: Demopage.supportedControls.Checkbox,
