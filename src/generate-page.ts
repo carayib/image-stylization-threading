@@ -60,9 +60,9 @@ const data = {
                     title: "Pegs",
                     id: "pegs-range-id",
                     min: 1,
-                    max: 100,
-                    value: 1,
-                    step: 1
+                    max: 10,
+                    value: 10,
+                    step: 0.5
                 },
                 {
                     type: Demopage.supportedControls.Range,

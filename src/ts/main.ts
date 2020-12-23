@@ -20,8 +20,8 @@ function plot(image: InputImage, plotter: PlotterBase): void {
     plotter.resize();
     plotter.initialize({ backgroundColor: "white", blur: 0 });
 
-    const threadComputer = new ThreadComputer(image.sourceImage, Parameters.shape);
     threadComputer.computeNextThreads(2000);
+    const threadComputer = new ThreadComputer(image.sourceImage, Parameters.shape, Parameters.pegsSpacing);
 
     if (Parameters.displayPegs) {
         threadComputer.drawPegs(plotter);

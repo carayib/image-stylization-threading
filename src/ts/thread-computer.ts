@@ -8,7 +8,6 @@ const MAX_SAFE_NUMBER = 9007199254740991;
 const MAX_SIZE = 256; // pixels
 const TWO_PI = 2 * Math.PI;
 const LINE_OPACITY = 0.512 / 8;
-const NB_PEGS = 256;
 
 function clamp(x: number, min: number, max: number): number {
     if (x < min) {
@@ -55,7 +54,7 @@ class ThreadComputer {
     private readonly threadPegs: IPeg[] = [];
     private arePegsTooClose: (peg1: IPeg, peg2: IPeg) => boolean;
 
-    public constructor(image: HTMLImageElement, pegsShape: EShape) {
+    public constructor(image: HTMLImageElement, pegsShape: EShape, pegsSpacing: number) {
         // this.sourceImage = image;
 
         this.hiddenCanvas = document.createElement("canvas");
@@ -66,7 +65,7 @@ class ThreadComputer {
         this.hiddenCanvas.height = hiddenCanvasSize.height;
         this.hiddenCanvasContext.drawImage(image, 0, 0, hiddenCanvasSize.width, hiddenCanvasSize.height);
 
-        this.pegs = this.computePegs(hiddenCanvasSize, NB_PEGS, pegsShape);
+        this.pegs = this.computePegs(hiddenCanvasSize, pegsShape, pegsSpacing);
     }
 
     public draw(targetContext: CanvasRenderingContext2D): void {
@@ -203,8 +202,8 @@ class ThreadComputer {
             };
 
             const imageValue = this.sampleCanvasData(sample);
-            const finalValue = imageValue + (LINE_OPACITY * 255);
-            squaredError += finalValue;// * finalValue;
+            const finalValue = 128 * (imageValue + (LINE_OPACITY * 255));
+            squaredError += finalValue;
         }
         return squaredError / nbSamples;
     }
@@ -251,16 +250,13 @@ class ThreadComputer {
         };
     }
 
-    private computePegs(domainSize: ISize, nbPegs: number, pegsShape: EShape): IPeg[] {
+    private computePegs(domainSize: ISize, pegsShape: EShape, pegsSpacing: number): IPeg[] {
         const pegs: IPeg[] = [];
 
         if (pegsShape === EShape.RECTANGLE) {
             this.arePegsTooClose = (peg1: IPeg, peg2: IPeg) => {
                 return peg1.x === peg2.x || peg1.y === peg2.y;
             };
-
-            const sidesTotalLength = 2 * (domainSize.width + domainSize.height);
-            const pegsSpacing = sidesTotalLength / nbPegs;
 
             const maxX = domainSize.width - 1;
             const maxY = domainSize.height - 1;
@@ -295,8 +291,10 @@ class ThreadComputer {
                 return minAngle <= TWO_PI / 16;
             };
 
-            for (let iP = 0; iP < nbPegs; iP++) {
-                const angle = TWO_PI * iP / nbPegs;
+            const nbPegs = Math.ceil(0.5 * TWO_PI * MAX_SIZE / pegsSpacing);
+            const baseDeltaAngle = TWO_PI / nbPegs;
+            for (let iPeg = 0; iPeg < nbPegs; iPeg++) {
+                const angle = iPeg * baseDeltaAngle;
                 const peg: IPegCircle = {
                     x: 0.5 * domainSize.width * (1 + Math.cos(angle)),
                     y: 0.5 * domainSize.height * (1 + Math.sin(angle)),

@@ -55,9 +55,8 @@ abstract class Parameters {
         return Page.Tabs.getValues(controlId.SHAPE)[0] as EShape;
     }
 
-    public static get nbPegs(): number {
-        const rawNbPegs = Page.Range.getValue(controlId.NB_PEGS);
-        return rawNbPegs * 10;
+    public static get pegsSpacing(): number {
+        return 11 - Page.Range.getValue(controlId.NB_PEGS);
     }
 
     public static get intensity(): number {
