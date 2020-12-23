@@ -16,7 +16,12 @@ const data = {
     scriptFiles: [
         "script/main.min.js"
     ],
-    indicators: [],
+    indicators: [
+        {
+            id: "pegs-count",
+            label: "Pegs count"
+        },
+    ],
     canvas: {
         width: 512,
         height: 512,

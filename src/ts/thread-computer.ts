@@ -115,6 +115,10 @@ class ThreadComputer {
         }
     }
 
+    public get nbPegs(): number {
+        return this.pegs.length;
+    }
+
     private computeTransformation(targetSize: ISize): Transformation {
         return new Transformation(targetSize, this.hiddenCanvas);
     }

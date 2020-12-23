@@ -22,6 +22,8 @@ function plot(image: InputImage, plotter: PlotterBase): void {
 
     threadComputer.computeNextThreads(2000);
     const threadComputer = new ThreadComputer(image.sourceImage, Parameters.shape, Parameters.pegsSpacing);
+    Page.Canvas.setIndicatorText("pegs-count", threadComputer.nbPegs.toString());
+
 
     if (Parameters.displayPegs) {
         threadComputer.drawPegs(plotter);
