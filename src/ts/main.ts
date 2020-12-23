@@ -25,6 +25,7 @@ function plot(image: InputImage, plotter: PlotterBase): void {
 
     Page.Canvas.setIndicatorText("pegs-count", threadComputer.nbPegs.toString());
     Page.Canvas.setIndicatorText("segments-count", threadComputer.nbSegments.toString());
+    Page.Canvas.setIndicatorText("thread-length", threadComputer.threadLength(plotter).toFixed(0) + " pixels");
 
     if (Parameters.displayPegs) {
         threadComputer.drawPegs(plotter);

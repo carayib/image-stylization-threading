@@ -109,7 +109,7 @@ class ThreadComputer {
                 lastPeg = this.threadPegs[this.threadPegs.length - 1];
                 nextPeg = this.computeBestNextPeg(lastPeg);
             }
-            
+
             this.threadPegs.push(nextPeg);
             this.drawThread(lastPeg, nextPeg);
         }
@@ -121,6 +121,20 @@ class ThreadComputer {
 
     public get nbSegments(): number {
         return this.threadPegs.length > 1 ? this.threadPegs.length - 1 : 0;
+    }
+
+    public threadLength(plotter: PlotterBase): number {
+        let baseLength = 0;
+        for (let iP = 0; iP < this.threadPegs.length - 1; iP++) {
+            const peg1 = this.threadPegs[iP];
+            const peg2 = this.threadPegs[iP + 1];
+            const dX = peg1.x - peg2.x;
+            const dY = peg1.y - peg2.y;
+            baseLength += Math.sqrt(dX * dX + dY * dY);
+        }
+
+        const transformation = this.computeTransformation(plotter.size);
+        return baseLength * transformation.scaling;
     }
 
     private computeTransformation(targetSize: ISize): Transformation {
