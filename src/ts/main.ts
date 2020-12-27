@@ -84,7 +84,7 @@ function main(): void {
 
     function onNewImage(image: HTMLImageElement): void {
         Page.Canvas.showLoader(false);
-        threadComputer = new ThreadComputer(image, Parameters.shape, Parameters.pegsSpacing);
+        threadComputer = new ThreadComputer(image);
         needToReset = true;
     }
     Parameters.addFileUploadObserver(onNewImage);

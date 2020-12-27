@@ -59,16 +59,12 @@ class ThreadComputer {
     private threadPegs: IPeg[] = [];
     private arePegsTooClose: (peg1: IPeg, peg2: IPeg) => boolean;
 
-    public constructor(image: HTMLImageElement, pegsShape: EShape, pegsSpacing: number) {
+    public constructor(image: HTMLImageElement) {
         this.sourceImage = image;
 
         this.hiddenCanvas = document.createElement("canvas");
         this.hiddenCanvasContext = this.hiddenCanvas.getContext("2d");
-        this.resetHiddenCanvas();
-
-        this.pegsShape = pegsShape;
-        this.pegsSpacing = pegsSpacing;
-        this.pegs = this.computePegs();
+        this.reset();
     }
 
     public drawThreads(plotter: PlotterBase): void {
