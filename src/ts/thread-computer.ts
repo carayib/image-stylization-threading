@@ -51,7 +51,7 @@ class ThreadComputer {
     private readonly sourceImage: HTMLImageElement;
     private readonly hiddenCanvas: HTMLCanvasElement;
     private readonly hiddenCanvasContext: CanvasRenderingContext2D;
-    private hiddenCanvasData: Uint8ClampedArray = null;
+    private hiddenCanvasData: ImageData = null
 
     private pegsShape: EShape;
     private pegsSpacing: number;
@@ -266,7 +266,7 @@ class ThreadComputer {
         if (this.hiddenCanvasData === null) {
             const width = this.hiddenCanvas.width;
             const height = this.hiddenCanvas.height;
-            this.hiddenCanvasData = this.hiddenCanvasContext.getImageData(0, 0, width, height).data;
+            this.hiddenCanvasData = this.hiddenCanvasContext.getImageData(0, 0, width, height);
         }
         Statistics.stopTimer("thread-computer.computeThreadPotential.uploadCanvasDataToCPU");
     }
@@ -300,8 +300,8 @@ class ThreadComputer {
 
     /** Linear interpolation. Returns a result in [0, 255] */
     private sampleCanvasData(coords: IPoint): number {
-        const width = this.hiddenCanvas.width;
-        const height = this.hiddenCanvas.height;
+        const width = this.hiddenCanvasData.width;
+        const height = this.hiddenCanvasData.height;
 
         const minX = clamp(Math.floor(coords.x), 0, width - 1);
         const maxX = clamp(Math.ceil(coords.x), 0, width - 1);
@@ -323,8 +323,8 @@ class ThreadComputer {
 
     // no interpolation
     private sampleCanvasPixel(pixelX: number, pixelY: number): number {
-        const index = 4 * (pixelX + pixelY * this.hiddenCanvas.width);
-        return this.hiddenCanvasData[index]; // only check the red channel because the hidden canvas is in black and white
+        const index = 4 * (pixelX + pixelY * this.hiddenCanvasData.width);
+        return this.hiddenCanvasData.data[index]; // only check the red channel because the hidden canvas is in black and white
     }
 
     private static computeBestSize(sourceImageSize: ISize, maxSize: number): ISize {
