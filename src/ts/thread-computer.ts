@@ -4,6 +4,8 @@ import { EShape, Parameters } from "./parameters";
 import { PlotterBase } from "./plotter/plotter-base";
 import { Transformation } from "./transformation";
 
+import * as Statistics from "./statistics/statistics";
+
 const MIN_SAFE_NUMBER = -9007199254740991;
 const HIDDEN_CANVAS_SIZE = 256; // pixels
 const TWO_PI = 2 * Math.PI;
@@ -172,6 +174,7 @@ class ThreadComputer {
     }
 
     private resetHiddenCanvas(): void {
+        Statistics.startTimer("thread-computer.resetHiddenCanvas", true);
         const wantedSize = ThreadComputer.computeBestSize(this.sourceImage, HIDDEN_CANVAS_SIZE);
         this.hiddenCanvas.width = wantedSize.width;
         this.hiddenCanvas.height = wantedSize.height;
@@ -196,6 +199,7 @@ class ThreadComputer {
         }
         this.hiddenCanvasContext.putImageData(imageData, 0, 0);
 
+        Statistics.stopTimer("thread-computer.resetHiddenCanvas");
     }
 
     private computeTransformation(targetSize: ISize): Transformation {
@@ -203,6 +207,7 @@ class ThreadComputer {
     }
 
     private drawThreadOnHiddenCanvas(peg1: IPeg, peg2: IPeg): void {
+        Statistics.startTimer("thread-computer.drawThreadOnHiddenCanvas", true);
         this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255, ${0.5 * LINE_OPACITY})`;
         this.hiddenCanvasContext.lineWidth = 1;
 
@@ -214,6 +219,7 @@ class ThreadComputer {
 
         // invalidate CPU data
         this.hiddenCanvasData = null;
+        Statistics.stopTimer("thread-computer.drawThreadOnHiddenCanvas");
     }
 
     private computeBestStartingThread(): IThread {
@@ -260,15 +266,18 @@ class ThreadComputer {
     }
 
     private uploadCanvasDataToCPU(): void {
+        Statistics.startTimer("thread-computer.computeThreadPotential.uploadCanvasDataToCPU", true);
         if (this.hiddenCanvasData === null) {
             const width = this.hiddenCanvas.width;
             const height = this.hiddenCanvas.height;
             this.hiddenCanvasData = this.hiddenCanvasContext.getImageData(0, 0, width, height).data;
         }
+        Statistics.stopTimer("thread-computer.computeThreadPotential.uploadCanvasDataToCPU");
     }
 
     /* The higher the result, the better a choice the thread is. */
     private computeThreadPotential(peg1: IPeg, peg2: IPeg): number {
+        Statistics.startTimer("thread-computer.computeThreadPotential", true);
         this.uploadCanvasDataToCPU();
 
         let squaredError = 0;
@@ -289,6 +298,7 @@ class ThreadComputer {
             const contribution = 127 - finalValue;
             squaredError += contribution;
         }
+        Statistics.stopTimer("thread-computer.computeThreadPotential");
         return squaredError / nbSamples;
     }
 
@@ -331,6 +341,8 @@ class ThreadComputer {
     }
 
     private computePegs(): IPeg[] {
+        Statistics.startTimer("thread-computer.computePegs", true);
+
         const domainSize: ISize = this.hiddenCanvas;
         const pegs: IPeg[] = [];
 
@@ -386,6 +398,7 @@ class ThreadComputer {
             }
         }
 
+        Statistics.stopTimer("thread-computer.computePegs");
         return pegs;
     }
 }

@@ -8,9 +8,12 @@ import { PlotterSVG } from "./plotter/plotter-svg";
 
 import { ThreadComputer } from "./thread-computer";
 
+import * as Statistics from "./statistics/statistics";
+
 import "./page-interface-generated";
 
 function plot(threadComputer: ThreadComputer, plotter: PlotterBase): void {
+    Statistics.startTimer("main.plot");
     const plotterInfos: IPlotterInfo = {
         backgroundColor: Parameters.invertColors ? "black": "white",
         blur: Parameters.blur,
@@ -25,6 +28,7 @@ function plot(threadComputer: ThreadComputer, plotter: PlotterBase): void {
     threadComputer.drawThreads(plotter);
 
     plotter.finalize();
+    Statistics.stopTimer("main.plot");
 }
 
 function main(): void {
@@ -36,6 +40,7 @@ function main(): void {
     Parameters.addRedrawObserver(() => needToRedraw = true);
     Parameters.addResetObserver(() => needToReset = true);
 
+    let i = 0;
     function mainLoop(): void {
         if (threadComputer !== null) {
             if (needToReset) {
@@ -58,6 +63,11 @@ function main(): void {
 
             if (Parameters.debug) {
                 threadComputer.drawDebugView(canvasPlotter.context);
+            }
+
+            i++;
+            if (i % 500 === 0) {
+                Statistics.print(console.log);
             }
         }
 
@@ -82,8 +92,10 @@ function main(): void {
     Page.Canvas.showLoader(true);
     const defaultImage = new Image();
     defaultImage.addEventListener("load", () => {
+        Statistics.stopTimer("load-default-image");
         onNewImage(defaultImage);
     });
+    Statistics.startTimer("load-default-image", true);
     defaultImage.src = "./resources/cat.jpg";
 
     Parameters.addDownloadObserver(() => {
