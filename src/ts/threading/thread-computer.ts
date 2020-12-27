@@ -37,13 +37,13 @@ interface IPeg {
     y: number;
 }
 
-interface IThread {
+interface ISegment {
     peg1: IPeg;
     peg2: IPeg;
 }
 
 /**
- * Class used to compute which thread is the best choice.
+ * Class used to compute which thread path is the best choice.
  */
 class ThreadComputer {
     public targetNbSegments: number = 0;
@@ -67,7 +67,7 @@ class ThreadComputer {
         this.reset();
     }
 
-    public drawThreads(plotter: PlotterBase): void {
+    public drawThread(plotter: PlotterBase): void {
         const transformation = this.computeTransformation(plotter.size);
         const lineWidth = 1 * transformation.scaling;
 
@@ -101,7 +101,7 @@ class ThreadComputer {
     }
 
     /** Returns true if there is nothing more to compute */
-    public computeNextThreads(maxMillisecondsTaken: number): boolean {
+    public computeNextSegments(maxMillisecondsTaken: number): boolean {
         const start = performance.now();
 
         this.targetNbSegments = Parameters.nbLines;
@@ -113,7 +113,7 @@ class ThreadComputer {
         }
 
         while (this.nbSegments < this.targetNbSegments && performance.now() - start < maxMillisecondsTaken) {
-            this.computeThread();
+            this.computeSegment();
         }
 
         return true;
@@ -151,12 +151,12 @@ class ThreadComputer {
         return baseLength * transformation.scaling;
     }
 
-    private computeThread(): void {
+    private computeSegment(): void {
         let lastPeg: IPeg;
         let nextPeg: IPeg;
 
         if (this.threadPegs.length === 0) {
-            const startingThread = this.computeBestStartingThread();
+            const startingThread = this.computeBestStartingSegment();
             this.threadPegs.push(startingThread.peg1);
             lastPeg = startingThread.peg1;
             nextPeg = startingThread.peg2;
@@ -166,7 +166,7 @@ class ThreadComputer {
         }
 
         this.threadPegs.push(nextPeg);
-        this.drawThreadOnHiddenCanvas(lastPeg, nextPeg);
+        this.drawSegmentOnHiddenCanvas(lastPeg, nextPeg);
     }
 
     private resetHiddenCanvas(): void {
@@ -202,8 +202,8 @@ class ThreadComputer {
         return new Transformation(targetSize, this.hiddenCanvas);
     }
 
-    private drawThreadOnHiddenCanvas(peg1: IPeg, peg2: IPeg): void {
-        Statistics.startTimer("thread-computer.drawThreadOnHiddenCanvas", true);
+    private drawSegmentOnHiddenCanvas(peg1: IPeg, peg2: IPeg): void {
+        Statistics.startTimer("thread-computer.drawSegmentOnHiddenCanvas", true);
         this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255, ${0.5 * LINE_OPACITY})`;
         this.hiddenCanvasContext.lineWidth = 1;
 
@@ -215,11 +215,11 @@ class ThreadComputer {
 
         // invalidate CPU data
         this.hiddenCanvasData = null;
-        Statistics.stopTimer("thread-computer.drawThreadOnHiddenCanvas");
+        Statistics.stopTimer("thread-computer.drawSegmentOnHiddenCanvas");
     }
 
-    private computeBestStartingThread(): IThread {
-        let candidates: IThread[] = [];
+    private computeBestStartingSegment(): ISegment {
+        let candidates: ISegment[] = [];
         let bestScore = MIN_SAFE_NUMBER;
 
         for (let iPegId1 = 0; iPegId1 < this.pegs.length; iPegId1++) {
@@ -228,7 +228,7 @@ class ThreadComputer {
                 const peg2 = this.pegs[iPegId2];
 
                 if (!this.arePegsTooClose(peg1, peg2)) {
-                    const candidateScore = this.computeThreadPotential(peg1, peg2);
+                    const candidateScore = this.computeSegmentPotential(peg1, peg2);
                     if (candidateScore > bestScore) {
                         bestScore = candidateScore;
                         candidates = [{ peg1, peg2, }];
@@ -248,7 +248,7 @@ class ThreadComputer {
 
         for (const peg of this.pegs) {
             if (!this.arePegsTooClose(currentPeg, peg)) {
-                const candidateScore = this.computeThreadPotential(currentPeg, peg);
+                const candidateScore = this.computeSegmentPotential(currentPeg, peg);
                 if (candidateScore > bestScore) {
                     bestScore = candidateScore;
                     candidates = [peg];
@@ -262,18 +262,18 @@ class ThreadComputer {
     }
 
     private uploadCanvasDataToCPU(): void {
-        Statistics.startTimer("thread-computer.computeThreadPotential.uploadCanvasDataToCPU", true);
+        Statistics.startTimer("thread-computer.computeSegmentPotential.uploadCanvasDataToCPU", true);
         if (this.hiddenCanvasData === null) {
             const width = this.hiddenCanvas.width;
             const height = this.hiddenCanvas.height;
             this.hiddenCanvasData = this.hiddenCanvasContext.getImageData(0, 0, width, height);
         }
-        Statistics.stopTimer("thread-computer.computeThreadPotential.uploadCanvasDataToCPU");
+        Statistics.stopTimer("thread-computer.computeSegmentPotential.uploadCanvasDataToCPU");
     }
 
     /* The higher the result, the better a choice the thread is. */
-    private computeThreadPotential(peg1: IPeg, peg2: IPeg): number {
-        Statistics.startTimer("thread-computer.computeThreadPotential", true);
+    private computeSegmentPotential(peg1: IPeg, peg2: IPeg): number {
+        Statistics.startTimer("thread-computer.computeSegmentPotential", true);
         this.uploadCanvasDataToCPU();
 
         let squaredError = 0;
@@ -294,7 +294,7 @@ class ThreadComputer {
             const contribution = 127 - finalValue;
             squaredError += contribution;
         }
-        Statistics.stopTimer("thread-computer.computeThreadPotential");
+        Statistics.stopTimer("thread-computer.computeSegmentPotential");
         return squaredError / nbSamples;
     }
 

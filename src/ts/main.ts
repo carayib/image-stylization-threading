@@ -25,7 +25,7 @@ function plot(threadComputer: ThreadComputer, plotter: PlotterBase): void {
     if (Parameters.displayPegs) {
         threadComputer.drawPegs(plotter);
     }
-    threadComputer.drawThreads(plotter);
+    threadComputer.drawThread(plotter);
 
     plotter.finalize();
     Statistics.stopTimer("main.plot");
@@ -49,7 +49,7 @@ function main(): void {
                 needToRedraw = true;
             }
 
-            const computedSomething = threadComputer.computeNextThreads(20);
+            const computedSomething = threadComputer.computeNextSegments(20);
             needToRedraw = needToRedraw || computedSomething;
 
             if (needToRedraw) {
