@@ -380,7 +380,7 @@ class ThreadComputer {
                 return minAngle <= TWO_PI / 16;
             };
 
-            const maxSize = Math.max(this.hiddenCanvas.width, this.hiddenCanvas.height);
+            const maxSize = Math.max(domainSize.width, domainSize.height);
             const nbPegs = Math.ceil(0.5 * TWO_PI * maxSize / this.pegsSpacing);
             const baseDeltaAngle = TWO_PI / nbPegs;
             for (let iPeg = 0; iPeg < nbPegs; iPeg++) {
