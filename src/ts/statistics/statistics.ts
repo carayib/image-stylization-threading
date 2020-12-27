@@ -13,7 +13,9 @@ function reset(): void {
 }
 
 function startTimer(name: string, singleUse?: boolean): void {
-    timers[name] = timers[name] || { stopwatch: new StopWatch(), singleUse: !!singleUse };
+    if (typeof timers[name] === "undefined") {
+        timers[name] = { stopwatch: new StopWatch(), singleUse: !!singleUse };
+    }
     timers[name].stopwatch.start();
 }
 
@@ -44,7 +46,7 @@ function print(printFunction: PrintingFunction): void {
         }
     });
 
-    list.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+    list.sort((a: IPrintableTimer, b: IPrintableTimer) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
 
     for (const item of list) {
         printFunction(`${item.name}:\t${item.stopwatch.totalTime / iteration} ms (average)`);
