@@ -24,6 +24,12 @@ function mix(a: number, b: number, x: number): number {
     return a * (1 - x) + b * x;
 }
 
+function distance(p1: IPoint, p2: IPoint): number {
+    const dX = p1.x - p2.x;
+    const dY = p1.y - p2.y;
+    return Math.sqrt(dX * dX + dY * dY);
+}
+
 function randomItem<T>(list: T[]): T {
     if (list.length === 0) {
         return null;
@@ -55,8 +61,9 @@ class ThreadComputer {
 
     private pegsShape: EShape;
     private pegsSpacing: number;
-    private pegs: IPeg[] = [];
-    private threadPegs: IPeg[] = [];
+    private pegs: IPeg[];
+    private threadPegs: IPeg[];
+    private threadLength: number;
     private arePegsTooClose: (peg1: IPeg, peg2: IPeg) => boolean;
 
     public constructor(image: HTMLImageElement) {
@@ -126,6 +133,7 @@ class ThreadComputer {
         this.pegsSpacing = Parameters.pegsSpacing;
         this.pegs = this.computePegs();
         this.threadPegs = [];
+        this.threadLength = 0;
         this.resetHiddenCanvas();
     }
 
@@ -137,18 +145,9 @@ class ThreadComputer {
         return this.threadPegs.length > 1 ? this.threadPegs.length - 1 : 0;
     }
 
-    public threadLength(plotter: PlotterBase): number {
-        let baseLength = 0;
-        for (let iP = 0; iP < this.threadPegs.length - 1; iP++) {
-            const peg1 = this.threadPegs[iP];
-            const peg2 = this.threadPegs[iP + 1];
-            const dX = peg1.x - peg2.x;
-            const dY = peg1.y - peg2.y;
-            baseLength += Math.sqrt(dX * dX + dY * dY);
-        }
-
+    public totalLength(plotter: PlotterBase): number {
         const transformation = this.computeTransformation(plotter.size);
-        return baseLength * transformation.scaling;
+        return this.threadLength * transformation.scaling;
     }
 
     private computeSegment(): void {
@@ -156,16 +155,17 @@ class ThreadComputer {
         let nextPeg: IPeg;
 
         if (this.threadPegs.length === 0) {
-            const startingThread = this.computeBestStartingSegment();
-            this.threadPegs.push(startingThread.peg1);
-            lastPeg = startingThread.peg1;
-            nextPeg = startingThread.peg2;
+            const startingSegment = this.computeBestStartingSegment();
+            this.threadPegs.push(startingSegment.peg1);
+            lastPeg = startingSegment.peg1;
+            nextPeg = startingSegment.peg2;
         } else {
             lastPeg = this.threadPegs[this.threadPegs.length - 1];
             nextPeg = this.computeBestNextPeg(lastPeg);
         }
 
         this.threadPegs.push(nextPeg);
+        this.threadLength += distance(lastPeg, nextPeg);
         this.drawSegmentOnHiddenCanvas(lastPeg, nextPeg);
     }
 
@@ -278,15 +278,13 @@ class ThreadComputer {
 
         let squaredError = 0;
 
-        const dX = peg2.x - peg1.x;
-        const dY = peg2.y - peg1.y;
-        const distance = Math.sqrt(dX * dX + dY * dY);
-        const nbSamples = Math.ceil(distance);
+        const segmentLength = distance(peg1, peg2);
+        const nbSamples = Math.ceil(segmentLength);
         for (let iSample = 0; iSample < nbSamples; iSample++) {
             const r = (iSample + 1) / (nbSamples + 1);
             const sample: IPoint = {
-                x: peg1.x + dX * r,
-                y: peg1.y + dY * r,
+                x: mix(peg1.x, peg2.x, r),
+                y: mix(peg1.y, peg2.y, r),
             };
 
             const imageValue = this.sampleCanvasData(sample);
