@@ -6,7 +6,7 @@ import { IPlotterInfo, PlotterBase } from "./plotter/plotter-base";
 import { PlotterCanvas2D } from "./plotter/plotter-canvas-2d";
 import { PlotterSVG } from "./plotter/plotter-svg";
 
-import { ThreadComputer } from "./thread-computer";
+import { ThreadComputer } from "./threading/thread-computer";
 
 import * as Statistics from "./statistics/statistics";
 

@@ -1,5 +1,5 @@
-import { IPoint } from "./interfaces/i-point";
-import { ISize } from "./interfaces/i-size";
+import { IPoint } from "../interfaces/i-point";
+import { ISize } from "../interfaces/i-size";
 
 class Transformation {
     public readonly scaling: number;

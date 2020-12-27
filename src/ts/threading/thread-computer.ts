@@ -1,10 +1,10 @@
-import { IPoint } from "./interfaces/i-point";
-import { ISize } from "./interfaces/i-size";
-import { EShape, Parameters } from "./parameters";
-import { PlotterBase } from "./plotter/plotter-base";
+import { IPoint } from "../interfaces/i-point";
+import { ISize } from "../interfaces/i-size";
+import { EShape, Parameters } from "../parameters";
+import { PlotterBase } from "../plotter/plotter-base";
 import { Transformation } from "./transformation";
 
-import * as Statistics from "./statistics/statistics";
+import * as Statistics from "../statistics/statistics";
 
 const MIN_SAFE_NUMBER = -9007199254740991;
 const HIDDEN_CANVAS_SIZE = 256; // pixels
