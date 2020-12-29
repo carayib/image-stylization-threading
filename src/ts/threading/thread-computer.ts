@@ -48,6 +48,8 @@ interface ISegment {
     peg2: IPeg;
 }
 
+type IndicatorUpdateFunction = (indicatorId: string, indicatorValue: string) => unknown;
+
 /**
  * Class used to compute which thread path is the best choice.
  */
@@ -137,17 +139,18 @@ class ThreadComputer {
         this.resetHiddenCanvas();
     }
 
-    public get nbPegs(): number {
-        return this.pegs.length;
-    }
-
-    public get nbSegments(): number {
-        return this.threadPegs.length > 1 ? this.threadPegs.length - 1 : 0;
-    }
-
-    public totalLength(plotter: PlotterBase): number {
+    public updateIndicators(plotter: PlotterBase, updateFunction: IndicatorUpdateFunction): void {
         const transformation = this.computeTransformation(plotter.size);
-        return this.threadLength * transformation.scaling;
+        const totalLength = this.threadLength * transformation.scaling;
+
+        updateFunction("pegs-count", this.pegs.length.toString());
+        updateFunction("segments-count", this.nbSegments.toString());
+        updateFunction("thread-length", totalLength.toFixed(0) + " pixels");
+
+    }
+
+    private get nbSegments(): number {
+        return this.threadPegs.length > 1 ? this.threadPegs.length - 1 : 0;
     }
 
     private computeSegment(): void {

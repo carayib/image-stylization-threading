@@ -56,9 +56,7 @@ function main(): void {
                 plot(threadComputer, canvasPlotter);
                 needToRedraw = !computedSomething;
 
-                Page.Canvas.setIndicatorText("pegs-count", threadComputer.nbPegs.toString());
-                Page.Canvas.setIndicatorText("segments-count", threadComputer.nbSegments.toString());
-                Page.Canvas.setIndicatorText("thread-length", threadComputer.totalLength(canvasPlotter).toFixed(0) + " pixels");
+                threadComputer.updateIndicators(canvasPlotter, Page.Canvas.setIndicatorText);
             }
 
             if (Parameters.debug) {
