@@ -9,6 +9,7 @@ const controlId = {
     NB_LINES: "lines-range-id",
     DISPLAY_PEGS: "display-pegs-checkbox-id",
     INVERT_COLORS: "invert-colors-checkbox-id",
+    SHOW_INDICATORS: "show-indicators-checkbox-id",
     BLUR: "blur-range-id",
     DOWNLOAD: "result-download-id",
 };
@@ -40,6 +41,13 @@ Page.Checkbox.addObserver(controlId.INVERT_COLORS, triggerReset);
 Page.Canvas.Observers.canvasResize.push(triggerRedraw);
 
 const isInDebug = Helpers.getQueryStringValue("debug") === "1";
+
+function updateIndicatorsVisibility(): void {
+    const shouldBeVisible = Page.Checkbox.isChecked(controlId.SHOW_INDICATORS);
+    Page.Canvas.setIndicatorsVisibility(shouldBeVisible);
+}
+Page.Checkbox.addObserver(controlId.SHOW_INDICATORS, updateIndicatorsVisibility);
+updateIndicatorsVisibility();
 
 abstract class Parameters {
     public static addFileUploadObserver(callback: (image: HTMLImageElement) => unknown): void {
@@ -81,6 +89,10 @@ abstract class Parameters {
 
     public static get invertColors(): boolean {
         return Page.Checkbox.isChecked(controlId.INVERT_COLORS);
+    }
+
+    public static get showIndicators(): boolean {
+        return Page.Checkbox.isChecked(controlId.SHOW_INDICATORS);
     }
 
     public static addRedrawObserver(callback: Observer): void {

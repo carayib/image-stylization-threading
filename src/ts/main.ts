@@ -15,7 +15,7 @@ import "./page-interface-generated";
 function plot(threadComputer: ThreadComputer, plotter: PlotterBase): void {
     Statistics.startTimer("main.plot");
     const plotterInfos: IPlotterInfo = {
-        backgroundColor: Parameters.invertColors ? "black": "white",
+        backgroundColor: Parameters.invertColors ? "black" : "white",
         blur: Parameters.blur,
     };
 
@@ -56,7 +56,9 @@ function main(): void {
                 plot(threadComputer, canvasPlotter);
                 needToRedraw = !computedSomething;
 
-                threadComputer.updateIndicators(canvasPlotter, Page.Canvas.setIndicatorText);
+                if (Parameters.showIndicators) {
+                    threadComputer.updateIndicators(canvasPlotter, Page.Canvas.setIndicatorText);
+                }
             }
 
             if (Parameters.debug) {

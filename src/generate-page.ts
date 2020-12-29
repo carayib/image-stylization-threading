@@ -104,6 +104,12 @@ const data = {
                     checked: false
                 },
                 {
+                    type: Demopage.supportedControls.Checkbox,
+                    title: "Show indicators",
+                    id: "show-indicators-checkbox-id",
+                    checked: true
+                },
+                {
                     type: Demopage.supportedControls.Range,
                     title: "Blur",
                     id: "blur-range-id",
