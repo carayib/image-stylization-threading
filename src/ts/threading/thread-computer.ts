@@ -225,8 +225,9 @@ class ThreadComputer {
         let candidates: ISegment[] = [];
         let bestScore = MIN_SAFE_NUMBER;
 
-        for (let iPegId1 = 0; iPegId1 < this.pegs.length; iPegId1++) {
-            for (let iPegId2 = iPegId1 + 1; iPegId2 < this.pegs.length; iPegId2++) {
+        const step = 1 + Math.floor(this.pegs.length / 100);
+        for (let iPegId1 = 0; iPegId1 < this.pegs.length; iPegId1 += step) {
+            for (let iPegId2 = iPegId1 + 1; iPegId2 < this.pegs.length; iPegId2 += step) {
                 const peg1 = this.pegs[iPegId1];
                 const peg2 = this.pegs[iPegId2];
 
