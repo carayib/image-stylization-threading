@@ -348,8 +348,8 @@ class ThreadComputer {
                 return peg1.x === peg2.x || peg1.y === peg2.y;
             };
 
-            const maxX = domainSize.width - 1;
-            const maxY = domainSize.height - 1;
+            const maxX = domainSize.width;
+            const maxY = domainSize.height;
             // corners
             pegs.push({ x: 0, y: 0 });
             pegs.push({ x: maxX, y: 0 });
