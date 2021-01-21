@@ -76,7 +76,8 @@ class ThreadComputer {
 
         this.hiddenCanvas = document.createElement("canvas");
         this.hiddenCanvasContext = this.hiddenCanvas.getContext("2d");
-        this.reset(16/256, 1);
+
+        this.reset(16 / 256, 1);
     }
 
     public drawThread(plotter: PlotterBase): void {
@@ -122,6 +123,26 @@ class ThreadComputer {
             this.reset(this.lineOpacity, this.lineThickness);
         } else if (this.nbSegments === this.targetNbSegments) {
             return false;
+        }
+
+        let opacity: number;
+        if (this.lineThickness <= 1) {
+            // do not go below a line width of 1 because it creates artifact.
+            // instead, lower the lines opacity.
+            opacity = 0.5 * this.lineOpacity * this.lineThickness;
+            this.hiddenCanvasContext.lineWidth = 1;
+        } else {
+            opacity = 0.5 * this.lineOpacity;
+            this.hiddenCanvasContext.lineWidth = this.lineThickness;
+        }
+
+        this.hiddenCanvasContext.globalCompositeOperation = ADDITIVE_COMPOSITING;
+        if (this.hiddenCanvasContext.globalCompositeOperation === ADDITIVE_COMPOSITING) {
+            this.hiddenCanvasContext.strokeStyle = `rgb(${255 * opacity}, ${255 * opacity}, ${255 * opacity})`;
+        } else {
+            Page.Demopage.setErrorMessage("best-compositing-not-supported", `Your browser does not support canvas2D compositing ${ADDITIVE_COMPOSITING}, which might lead to artifacts.`);
+            this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255,${opacity})`;
+            this.hiddenCanvasContext.globalCompositeOperation = DEFAULT_COMPOSITING;
         }
 
         while (this.nbSegments < this.targetNbSegments && performance.now() - start < maxMillisecondsTaken) {
@@ -187,6 +208,8 @@ class ThreadComputer {
         const wantedSize = ThreadComputer.computeBestSize(this.sourceImage, HIDDEN_CANVAS_SIZE);
         this.hiddenCanvas.width = wantedSize.width;
         this.hiddenCanvas.height = wantedSize.height;
+
+        this.hiddenCanvasContext.globalCompositeOperation = DEFAULT_COMPOSITING;
         this.hiddenCanvasContext.drawImage(this.sourceImage, 0, 0, wantedSize.width, wantedSize.height);
 
         let computeAdjustedValue: (r: number, g: number, b: number) => number;
@@ -217,17 +240,6 @@ class ThreadComputer {
 
     private drawSegmentOnHiddenCanvas(peg1: IPeg, peg2: IPeg): void {
         Statistics.startTimer("thread-computer.drawSegmentOnHiddenCanvas", true);
-
-        if (this.lineThickness <= 1) {
-            // do not go below a line width of 1 because it creates artifact.
-            // instead, lower the lines opacity.
-            this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255, ${0.5 * this.lineOpacity * this.lineThickness})`;
-            this.hiddenCanvasContext.lineWidth = 1;
-        } else {
-            this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255, ${0.5 * this.lineOpacity})`;
-            this.hiddenCanvasContext.lineWidth = this.lineThickness;
-        }
-
 
         this.hiddenCanvasContext.beginPath();
         this.hiddenCanvasContext.moveTo(peg1.x, peg1.y);
