@@ -65,6 +65,7 @@ class ThreadComputer {
     private pegs: IPeg[];
 
     private lineOpacity: number;
+    private lineThickness: number;
 
     private threadPegs: IPeg[];
     private threadLength: number;
@@ -75,12 +76,12 @@ class ThreadComputer {
 
         this.hiddenCanvas = document.createElement("canvas");
         this.hiddenCanvasContext = this.hiddenCanvas.getContext("2d");
-        this.reset(16/256);
+        this.reset(16/256, 1);
     }
 
     public drawThread(plotter: PlotterBase): void {
         const transformation = this.computeTransformation(plotter.size);
-        const lineWidth = 1 * transformation.scaling;
+        const lineWidth = 1 * transformation.scaling * this.lineThickness;
 
         const points: IPoint[] = [];
         for (const peg of this.threadPegs) {
@@ -118,7 +119,7 @@ class ThreadComputer {
         this.targetNbSegments = Parameters.nbLines;
         if (this.nbSegments > this.targetNbSegments) {
             // if we drew too many lines already
-            this.reset(this.lineOpacity);
+            this.reset(this.lineOpacity, this.lineThickness);
         } else if (this.nbSegments === this.targetNbSegments) {
             return false;
         }
@@ -134,12 +135,14 @@ class ThreadComputer {
      * @param opacity in [0,1]
      * @returns true if at least one parameter changed
      */
-    public reset(opacity: number): void {
+    public reset(opacity: number, linethickness: number): void {
         this.targetNbSegments = Parameters.nbLines;
         this.pegsShape = Parameters.shape;
         this.pegsSpacing = Parameters.pegsSpacing;
         this.pegs = this.computePegs();
+
         this.lineOpacity = opacity;
+        this.lineThickness = linethickness;
 
         this.threadPegs = [];
         this.threadLength = 0;
@@ -214,8 +217,17 @@ class ThreadComputer {
 
     private drawSegmentOnHiddenCanvas(peg1: IPeg, peg2: IPeg): void {
         Statistics.startTimer("thread-computer.drawSegmentOnHiddenCanvas", true);
-        this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255, ${0.5 * this.lineOpacity})`;
-        this.hiddenCanvasContext.lineWidth = 1;
+
+        if (this.lineThickness <= 1) {
+            // do not go below a line width of 1 because it creates artifact.
+            // instead, lower the lines opacity.
+            this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255, ${0.5 * this.lineOpacity * this.lineThickness})`;
+            this.hiddenCanvasContext.lineWidth = 1;
+        } else {
+            this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255, ${0.5 * this.lineOpacity})`;
+            this.hiddenCanvasContext.lineWidth = this.lineThickness;
+        }
+
 
         this.hiddenCanvasContext.beginPath();
         this.hiddenCanvasContext.moveTo(peg1.x, peg1.y);

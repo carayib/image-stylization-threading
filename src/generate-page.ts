@@ -95,6 +95,15 @@ const data = {
                     value: 2,
                     step: 1
                 },
+                {
+                    type: Demopage.supportedControls.Range,
+                    title: "Lines thickness",
+                    id: "thickness-range-id",
+                    min: 0.25,
+                    max: 1,
+                    value: 1,
+                    step: 0.25
+                },
             ]
         },
         {

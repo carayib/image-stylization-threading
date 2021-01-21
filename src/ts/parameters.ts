@@ -8,6 +8,7 @@ const controlId = {
     NB_PEGS: "pegs-range-id",
     NB_LINES: "lines-range-id",
     LINES_OPACITY: "opacity-range-id",
+    LINES_THICKNESS: "thickness-range-id",
     DISPLAY_PEGS: "display-pegs-checkbox-id",
     INVERT_COLORS: "invert-colors-checkbox-id",
     SHOW_INDICATORS: "show-indicators-checkbox-id",
@@ -38,6 +39,7 @@ function triggerReset(): void {
 Page.Tabs.addObserver(controlId.SHAPE, triggerReset);
 Page.Range.addLazyObserver(controlId.NB_PEGS, triggerReset);
 Page.Range.addLazyObserver(controlId.LINES_OPACITY, triggerReset);
+Page.Range.addLazyObserver(controlId.LINES_THICKNESS, triggerReset);
 Page.Checkbox.addObserver(controlId.DISPLAY_PEGS, triggerRedraw);
 Page.Checkbox.addObserver(controlId.INVERT_COLORS, triggerReset);
 Page.Canvas.Observers.canvasResize.push(triggerRedraw);
@@ -88,6 +90,10 @@ abstract class Parameters {
     public static get linesOpacity(): number {
         const raw = Page.Range.getValue(controlId.LINES_OPACITY);
         return Math.pow(2, raw - 7); // 2^(raw+2) / 256
+    }
+
+    public static get linesThickness(): number {
+        return Page.Range.getValue(controlId.LINES_THICKNESS);
     }
 
     public static get displayPegs(): boolean {
