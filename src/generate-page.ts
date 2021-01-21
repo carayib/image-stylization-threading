@@ -79,11 +79,20 @@ const data = {
                 },
                 {
                     type: Demopage.supportedControls.Range,
-                    title: "Lines",
+                    title: "Lines amount",
                     id: "lines-range-id",
                     min: 1,
                     max: 20,
                     value: 6,
+                    step: 1
+                },
+                {
+                    type: Demopage.supportedControls.Range,
+                    title: "Lines opacity",
+                    id: "opacity-range-id",
+                    min: 1,
+                    max: 5,
+                    value: 2,
                     step: 1
                 },
             ]

@@ -44,7 +44,7 @@ function main(): void {
     function mainLoop(): void {
         if (threadComputer !== null) {
             if (needToReset) {
-                threadComputer.reset();
+                threadComputer.reset(Parameters.linesOpacity);
                 needToReset = false;
                 needToRedraw = true;
             }

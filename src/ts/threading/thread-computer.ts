@@ -9,7 +9,6 @@ import * as Statistics from "../statistics/statistics";
 const MIN_SAFE_NUMBER = -9007199254740991;
 const HIDDEN_CANVAS_SIZE = 256; // pixels
 const TWO_PI = 2 * Math.PI;
-const LINE_OPACITY = 0.512 / 8;
 
 function clamp(x: number, min: number, max: number): number {
     if (x < min) {
@@ -64,6 +63,9 @@ class ThreadComputer {
     private pegsShape: EShape;
     private pegsSpacing: number;
     private pegs: IPeg[];
+
+    private lineOpacity: number;
+
     private threadPegs: IPeg[];
     private threadLength: number;
     private arePegsTooClose: (peg1: IPeg, peg2: IPeg) => boolean;
@@ -73,7 +75,7 @@ class ThreadComputer {
 
         this.hiddenCanvas = document.createElement("canvas");
         this.hiddenCanvasContext = this.hiddenCanvas.getContext("2d");
-        this.reset();
+        this.reset(16/256);
     }
 
     public drawThread(plotter: PlotterBase): void {
@@ -86,7 +88,7 @@ class ThreadComputer {
         }
 
         const baseColor = Parameters.invertColors ? "255,255,255" : "0,0,0";
-        const lineColor = `rgba(${baseColor}, ${LINE_OPACITY})`
+        const lineColor = `rgba(${baseColor}, ${this.lineOpacity})`;
         plotter.drawBrokenLine(points, lineColor, lineWidth);
     }
 
@@ -116,7 +118,7 @@ class ThreadComputer {
         this.targetNbSegments = Parameters.nbLines;
         if (this.nbSegments > this.targetNbSegments) {
             // if we drew too many lines already
-            this.reset();
+            this.reset(this.lineOpacity);
         } else if (this.nbSegments === this.targetNbSegments) {
             return false;
         }
@@ -128,12 +130,17 @@ class ThreadComputer {
         return true;
     }
 
-    /** Returns true if at least one parameter changed */
-    public reset(): void {
+    /**
+     * @param opacity in [0,1]
+     * @returns true if at least one parameter changed
+     */
+    public reset(opacity: number): void {
         this.targetNbSegments = Parameters.nbLines;
         this.pegsShape = Parameters.shape;
         this.pegsSpacing = Parameters.pegsSpacing;
         this.pegs = this.computePegs();
+        this.lineOpacity = opacity;
+
         this.threadPegs = [];
         this.threadLength = 0;
         this.resetHiddenCanvas();
@@ -207,7 +214,7 @@ class ThreadComputer {
 
     private drawSegmentOnHiddenCanvas(peg1: IPeg, peg2: IPeg): void {
         Statistics.startTimer("thread-computer.drawSegmentOnHiddenCanvas", true);
-        this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255, ${0.5 * LINE_OPACITY})`;
+        this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255, ${0.5 * this.lineOpacity})`;
         this.hiddenCanvasContext.lineWidth = 1;
 
         this.hiddenCanvasContext.beginPath();
@@ -292,7 +299,7 @@ class ThreadComputer {
             };
 
             const imageValue = this.sampleCanvasData(sample);
-            const finalValue = imageValue + (0.5 * LINE_OPACITY * 255);
+            const finalValue = imageValue + (0.5 * this.lineOpacity * 255);
             const contribution = 127 - finalValue;
             squaredError += contribution;
         }
