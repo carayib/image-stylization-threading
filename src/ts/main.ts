@@ -41,6 +41,7 @@ function main(): void {
     Parameters.addResetObserver(() => needToReset = true);
 
     let i = 0;
+    let indicatorsNeedUpdate = true;
     function mainLoop(): void {
         if (threadComputer !== null) {
             if (needToReset) {
@@ -52,13 +53,15 @@ function main(): void {
             const computedSomething = threadComputer.computeNextSegments(20);
             needToRedraw = needToRedraw || computedSomething;
 
+            indicatorsNeedUpdate = indicatorsNeedUpdate || computedSomething;
+            if (indicatorsNeedUpdate && Parameters.showIndicators) {
+                threadComputer.updateIndicators(canvasPlotter, Page.Canvas.setIndicatorText);
+                indicatorsNeedUpdate = false;
+            }
+
             if (needToRedraw) {
                 plot(threadComputer, canvasPlotter);
                 needToRedraw = !computedSomething;
-
-                if (Parameters.showIndicators) {
-                    threadComputer.updateIndicators(canvasPlotter, Page.Canvas.setIndicatorText);
-                }
             }
 
             if (Parameters.debug) {
