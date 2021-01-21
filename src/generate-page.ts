@@ -99,7 +99,7 @@ const data = {
                     type: Demopage.supportedControls.Range,
                     title: "Lines thickness",
                     id: "thickness-range-id",
-                    min: 0.25,
+                    min: 0.5,
                     max: 1,
                     value: 1,
                     step: 0.25
