@@ -10,6 +10,9 @@ const MIN_SAFE_NUMBER = -9007199254740991;
 const HIDDEN_CANVAS_SIZE = 256; // pixels
 const TWO_PI = 2 * Math.PI;
 
+const DEFAULT_COMPOSITING = "source-over";
+const ADDITIVE_COMPOSITING = "lighter";
+
 function clamp(x: number, min: number, max: number): number {
     if (x < min) {
         return min;
