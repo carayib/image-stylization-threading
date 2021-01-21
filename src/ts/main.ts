@@ -40,7 +40,7 @@ function main(): void {
     Parameters.addRedrawObserver(() => needToRedraw = true);
     Parameters.addResetObserver(() => needToReset = true);
 
-    let i = 0;
+    // let i = 0;
     let indicatorsNeedUpdate = true;
     function mainLoop(): void {
         if (threadComputer !== null) {
@@ -68,10 +68,10 @@ function main(): void {
                 threadComputer.drawDebugView(canvasPlotter.context);
             }
 
-            i++;
-            if (i % 500 === 0) {
-                Statistics.print(console.log);
-            }
+            // i++;
+            // if (i % 500 === 0) {
+            //     Statistics.print(console.log);
+            // }
         }
 
         requestAnimationFrame(mainLoop);
