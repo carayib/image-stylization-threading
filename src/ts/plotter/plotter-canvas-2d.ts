@@ -50,7 +50,7 @@ class PlotterCanvas2D extends PlotterBase {
     public drawLines(lines: ILine[], color: string, thickness: number): void {
         if (lines.length >= 1) {
             this.context.strokeStyle = color;
-            this.context.lineWidth = thickness;
+            this.context.lineWidth = thickness * this.cssPixel;
 
             for (const line of lines) {
                 this.context.beginPath();
