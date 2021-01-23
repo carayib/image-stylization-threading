@@ -10,7 +10,7 @@ const data = {
         "This is a simple tool that turns images into lines.",
         "The result can be exported in the SVG format."
     ],
-    githubProjectName: "image-stylization-sines",
+    githubProjectName: "image-stylization-threading",
     additionalLinks: [],
     styleFiles: [],
     scriptFiles: [
