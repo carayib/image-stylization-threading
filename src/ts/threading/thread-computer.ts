@@ -61,7 +61,6 @@ class ThreadComputer {
     private readonly hiddenCanvasContext: CanvasRenderingContext2D;
     private hiddenCanvasData: ImageData = null
 
-    private pegsSpacing: number;
     private pegs: IPeg[];
 
     private lineOpacity: number;
@@ -148,7 +147,6 @@ class ThreadComputer {
      * @returns true if at least one parameter changed
      */
     public reset(opacity: number, linethickness: number): void {
-        this.pegsSpacing = Parameters.pegsSpacing;
         this.pegs = this.computePegs();
 
         this.lineOpacity = opacity;
@@ -388,6 +386,8 @@ class ThreadComputer {
         const pegs: IPeg[] = [];
 
         const pegsShape = Parameters.shape;
+        const pegsSpacing = Parameters.pegsSpacing;
+
         if (pegsShape === EShape.RECTANGLE) {
             this.arePegsTooClose = (peg1: IPeg, peg2: IPeg) => {
                 return peg1.x === peg2.x || peg1.y === peg2.y;
@@ -402,14 +402,14 @@ class ThreadComputer {
             pegs.push({ x: 0, y: maxY });
 
             // sides
-            const nbPegsPerWidth = Math.ceil(domainSize.width / this.pegsSpacing);
+            const nbPegsPerWidth = Math.ceil(domainSize.width / pegsSpacing);
             for (let iW = 1; iW < nbPegsPerWidth; iW++) {
                 const x = maxX * (iW / nbPegsPerWidth);
                 pegs.push({ x, y: 0 });
                 pegs.push({ x, y: maxY });
             }
 
-            const nbPegsPerHeight = Math.ceil(domainSize.height / this.pegsSpacing);
+            const nbPegsPerHeight = Math.ceil(domainSize.height / pegsSpacing);
             for (let iH = 1; iH < nbPegsPerHeight; iH++) {
                 const y = maxY * (iH / nbPegsPerHeight);
                 pegs.push({ x: 0, y });
@@ -427,7 +427,7 @@ class ThreadComputer {
             };
 
             const maxSize = Math.max(domainSize.width, domainSize.height);
-            const nbPegs = Math.ceil(0.5 * TWO_PI * maxSize / this.pegsSpacing);
+            const nbPegs = Math.ceil(0.5 * TWO_PI * maxSize / pegsSpacing);
             const baseDeltaAngle = TWO_PI / nbPegs;
             for (let iPeg = 0; iPeg < nbPegs; iPeg++) {
                 const angle = iPeg * baseDeltaAngle;
