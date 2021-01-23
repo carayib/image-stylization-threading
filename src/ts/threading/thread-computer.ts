@@ -56,8 +56,6 @@ type IndicatorUpdateFunction = (indicatorId: string, indicatorValue: string) => 
  * Class used to compute which thread path is the best choice.
  */
 class ThreadComputer {
-    public targetNbSegments: number = 0;
-
     private readonly sourceImage: HTMLImageElement;
     private readonly hiddenCanvas: HTMLCanvasElement;
     private readonly hiddenCanvasContext: CanvasRenderingContext2D;
@@ -105,9 +103,6 @@ class ThreadComputer {
         for (const peg of this.pegs) {
             points.push(transformation.transform(peg));
         }
-        if (points.length > this.targetNbSegments) {
-            points.length = this.targetNbSegments;
-        }
 
         plotter.drawPoints(points, "red", pointSize);
     }
@@ -120,14 +115,14 @@ class ThreadComputer {
     public computeNextSegments(maxMillisecondsTaken: number): boolean {
         const start = performance.now();
 
-        this.targetNbSegments = Parameters.nbLines;
-        if (this.nbSegments === this.targetNbSegments) {
+        const targetNbSegments = Parameters.nbLines;
+        if (this.nbSegments === targetNbSegments) {
             // no new segment to compute
             return false;
-        } else if (this.nbSegments > this.targetNbSegments) {
+        } else if (this.nbSegments > targetNbSegments) {
             // we drew too many lines already, removes the excess
-            if (this.targetNbSegments > 0) {
-                this.threadPegs.length = this.targetNbSegments + 1;
+            if (targetNbSegments > 0) {
+                this.threadPegs.length = targetNbSegments + 1;
             } else {
                 this.threadPegs.length = 0;
             }
@@ -142,7 +137,7 @@ class ThreadComputer {
 
         this.initializeHiddenCanvasCompositing();
 
-        while (this.nbSegments < this.targetNbSegments && performance.now() - start < maxMillisecondsTaken) {
+        while (this.nbSegments < targetNbSegments && performance.now() - start < maxMillisecondsTaken) {
             this.computeSegment();
         }
 
@@ -154,7 +149,6 @@ class ThreadComputer {
      * @returns true if at least one parameter changed
      */
     public reset(opacity: number, linethickness: number): void {
-        this.targetNbSegments = Parameters.nbLines;
         this.pegsShape = Parameters.shape;
         this.pegsSpacing = Parameters.pegsSpacing;
         this.pegs = this.computePegs();
