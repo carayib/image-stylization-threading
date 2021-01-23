@@ -121,32 +121,26 @@ class ThreadComputer {
         const start = performance.now();
 
         this.targetNbSegments = Parameters.nbLines;
-        if (this.nbSegments > this.targetNbSegments) {
-            // if we drew too many lines already
-            this.reset(this.lineOpacity, this.lineThickness);
-        } else if (this.nbSegments === this.targetNbSegments) {
+        if (this.nbSegments === this.targetNbSegments) {
+            // no new segment to compute
             return false;
+        } else if (this.nbSegments > this.targetNbSegments) {
+            // we drew too many lines already, removes the excess
+            if (this.targetNbSegments > 0) {
+                this.threadPegs.length = this.targetNbSegments + 1;
+            } else {
+                this.threadPegs.length = 0;
+            }
+
+            this.resetHiddenCanvas();
+            this.initializeHiddenCanvasCompositing();
+            for (let iPeg = 0; iPeg + 1 < this.threadPegs.length; iPeg++) {
+                this.drawSegmentOnHiddenCanvas(this.threadPegs[iPeg], this.threadPegs[iPeg + 1]);
+            }
+            return true;
         }
 
-        let opacity: number;
-        if (this.lineThickness <= 1) {
-            // do not go below a line width of 1 because it creates artifact.
-            // instead, lower the lines opacity.
-            opacity = 0.5 * this.lineOpacity * this.lineThickness;
-            this.hiddenCanvasContext.lineWidth = 1;
-        } else {
-            opacity = 0.5 * this.lineOpacity;
-            this.hiddenCanvasContext.lineWidth = this.lineThickness;
-        }
-
-        this.hiddenCanvasContext.globalCompositeOperation = ADDITIVE_COMPOSITING;
-        if (this.hiddenCanvasContext.globalCompositeOperation === ADDITIVE_COMPOSITING) {
-            this.hiddenCanvasContext.strokeStyle = `rgb(${255 * opacity}, ${255 * opacity}, ${255 * opacity})`;
-        } else {
-            Page.Demopage.setErrorMessage("best-compositing-not-supported", `Your browser does not support canvas2D compositing ${ADDITIVE_COMPOSITING}, which might lead to artifacts.`);
-            this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255,${opacity})`;
-            this.hiddenCanvasContext.globalCompositeOperation = DEFAULT_COMPOSITING;
-        }
+        this.initializeHiddenCanvasCompositing();
 
         while (this.nbSegments < this.targetNbSegments && performance.now() - start < maxMillisecondsTaken) {
             this.computeSegment();
@@ -181,6 +175,29 @@ class ThreadComputer {
         updateFunction("segments-count", this.nbSegments.toString());
         updateFunction("thread-length", totalLength.toFixed(0) + " pixels");
 
+    }
+
+    private initializeHiddenCanvasCompositing(): void {
+        let opacity: number;
+        if (this.lineThickness <= 1) {
+            // do not go below a line width of 1 because it creates artifact.
+            // instead, lower the lines opacity.
+            opacity = this.lineOpacity * this.lineThickness;
+            this.hiddenCanvasContext.lineWidth = 1;
+        } else {
+            opacity = this.lineOpacity;
+            this.hiddenCanvasContext.lineWidth = this.lineThickness;
+        }
+        opacity *= 0.5;
+
+        this.hiddenCanvasContext.globalCompositeOperation = ADDITIVE_COMPOSITING;
+        if (this.hiddenCanvasContext.globalCompositeOperation === ADDITIVE_COMPOSITING) {
+            this.hiddenCanvasContext.strokeStyle = `rgb(${255 * opacity}, ${255 * opacity}, ${255 * opacity})`;
+        } else {
+            Page.Demopage.setErrorMessage("best-compositing-not-supported", `Your browser does not support canvas2D compositing ${ADDITIVE_COMPOSITING}, which might lead to artifacts.`);
+            this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255,${opacity})`;
+            this.hiddenCanvasContext.globalCompositeOperation = DEFAULT_COMPOSITING;
+        }
     }
 
     private get nbSegments(): number {
