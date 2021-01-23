@@ -61,7 +61,6 @@ class ThreadComputer {
     private readonly hiddenCanvasContext: CanvasRenderingContext2D;
     private hiddenCanvasData: ImageData = null
 
-    private pegsShape: EShape;
     private pegsSpacing: number;
     private pegs: IPeg[];
 
@@ -149,7 +148,6 @@ class ThreadComputer {
      * @returns true if at least one parameter changed
      */
     public reset(opacity: number, linethickness: number): void {
-        this.pegsShape = Parameters.shape;
         this.pegsSpacing = Parameters.pegsSpacing;
         this.pegs = this.computePegs();
 
@@ -389,7 +387,8 @@ class ThreadComputer {
         const domainSize: ISize = this.hiddenCanvas;
         const pegs: IPeg[] = [];
 
-        if (this.pegsShape === EShape.RECTANGLE) {
+        const pegsShape = Parameters.shape;
+        if (pegsShape === EShape.RECTANGLE) {
             this.arePegsTooClose = (peg1: IPeg, peg2: IPeg) => {
                 return peg1.x === peg2.x || peg1.y === peg2.y;
             };
