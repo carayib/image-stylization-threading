@@ -81,10 +81,10 @@ const data = {
                     type: Demopage.supportedControls.Range,
                     title: "Lines amount",
                     id: "lines-range-id",
-                    min: 1,
-                    max: 20,
-                    value: 6,
-                    step: 1
+                    min: 500,
+                    max: 10000,
+                    value: 3000,
+                    step: 500
                 },
                 {
                     type: Demopage.supportedControls.Range,

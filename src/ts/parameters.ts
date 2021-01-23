@@ -84,7 +84,7 @@ abstract class Parameters {
     }
 
     public static get nbLines(): number {
-        return 500 * Page.Range.getValue(controlId.NB_LINES);
+        return Page.Range.getValue(controlId.NB_LINES);
     }
 
     public static get linesOpacity(): number {
