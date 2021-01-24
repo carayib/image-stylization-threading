@@ -48,7 +48,7 @@ const data = {
             ]
         },
         {
-            title: "Parameters",
+            title: "Pegs",
             controls: [
                 {
                     type: Demopage.supportedControls.Tabs,
@@ -77,9 +77,14 @@ const data = {
                     value: 10,
                     step: 0.5
                 },
+            ]
+        },
+        {
+            title: "Thread",
+            controls: [
                 {
                     type: Demopage.supportedControls.Range,
-                    title: "Lines amount",
+                    title: "Segments count",
                     id: "lines-range-id",
                     min: 500,
                     max: 10000,
@@ -88,7 +93,7 @@ const data = {
                 },
                 {
                     type: Demopage.supportedControls.Range,
-                    title: "Lines opacity",
+                    title: "Opacity",
                     id: "opacity-range-id",
                     min: 1,
                     max: 5,
@@ -97,12 +102,18 @@ const data = {
                 },
                 {
                     type: Demopage.supportedControls.Range,
-                    title: "Lines thickness",
+                    title: "Thickness",
                     id: "thickness-range-id",
                     min: 0.5,
                     max: 1,
                     value: 1,
                     step: 0.25
+                },
+                {
+                    type: Demopage.supportedControls.Checkbox,
+                    title: "Dark mode",
+                    id: "invert-colors-checkbox-id",
+                    checked: false
                 },
             ]
         },
@@ -113,12 +124,6 @@ const data = {
                     type: Demopage.supportedControls.Checkbox,
                     title: "Pegs",
                     id: "display-pegs-checkbox-id",
-                    checked: false
-                },
-                {
-                    type: Demopage.supportedControls.Checkbox,
-                    title: "Invert colors",
-                    id: "invert-colors-checkbox-id",
                     checked: false
                 },
                 {
