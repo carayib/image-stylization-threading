@@ -57,7 +57,7 @@ class PlotterSVG extends PlotterBase {
                 this.stringParts.push(`\t\t\t<line x1="${line.from.x.toFixed(1)}" y1="${line.from.y.toFixed(1)}" x2="${line.to.x.toFixed(1)}" y2="${line.to.y.toFixed(1)}"/>\n`);
             }
 
-            this.stringParts.push(`"\t\t</g>\n`);
+            this.stringParts.push(`\t\t</g>\n`);
         }
     }
 
