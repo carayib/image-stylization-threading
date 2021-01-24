@@ -37,7 +37,7 @@ class PlotterSVG extends PlotterBase {
         }
 
         this.stringParts.push(`\t<rect fill="${infos.backgroundColor}" stroke="none" x="0" y="0" width="${WIDTH}" height="${HEIGHT}"/>\n`);
-        this.stringParts.push(`\t<g fill="none" stroke-linejoin="round">\n`);
+        this.stringParts.push(`\t<g fill="none" stroke-linecap="round">\n`);
     }
 
     public finalize(): void {
