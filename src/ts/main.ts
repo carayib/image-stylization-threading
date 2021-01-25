@@ -55,7 +55,7 @@ function main(): void {
 
             indicatorsNeedUpdate = indicatorsNeedUpdate || computedSomething;
             if (indicatorsNeedUpdate && Parameters.showIndicators) {
-                threadComputer.updateIndicators(canvasPlotter, Page.Canvas.setIndicatorText);
+                threadComputer.updateIndicators(Page.Canvas.setIndicatorText);
                 indicatorsNeedUpdate = false;
             }
 

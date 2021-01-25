@@ -65,7 +65,6 @@ class ThreadComputer {
     private lineThickness: number;
 
     private threadPegs: IPeg[];
-    private threadLength: number;
     private arePegsTooClose: (peg1: IPeg, peg2: IPeg) => boolean;
 
     public constructor(image: HTMLImageElement) {
@@ -147,17 +146,12 @@ class ThreadComputer {
         this.lineThickness = linethickness;
 
         this.threadPegs = [];
-        this.threadLength = 0;
         this.resetHiddenCanvas();
     }
 
-    public updateIndicators(plotter: PlotterBase, updateFunction: IndicatorUpdateFunction): void {
-        const transformation = this.computeTransformation(plotter.size);
-        const totalLength = this.threadLength * transformation.scaling;
-
+    public updateIndicators(updateFunction: IndicatorUpdateFunction): void {
         updateFunction("pegs-count", this.pegs.length.toString());
         updateFunction("segments-count", this.nbSegments.toString());
-        updateFunction("thread-length", totalLength.toFixed(0) + " pixels");
 
     }
 
@@ -196,7 +190,6 @@ class ThreadComputer {
         }
 
         this.threadPegs.push(nextPeg);
-        this.threadLength += distance(lastPeg, nextPeg);
         this.drawSegmentOnHiddenCanvas(lastPeg, nextPeg);
     }
 
