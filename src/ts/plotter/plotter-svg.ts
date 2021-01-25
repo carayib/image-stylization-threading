@@ -1,6 +1,6 @@
 import { ILine } from "../interfaces/i-line";
 import { IPoint } from "../interfaces/i-point";
-import { ECompositingOperation, useAdvancedCompositing } from "./compositing";
+import { computeRawColor, EColor, ECompositingOperation, useAdvancedCompositing } from "./compositing";
 import { PlotterBase, IPlotterInfo, ISize } from "./plotter-base";
 import { XMLWriter } from "./xml-writer";
 
@@ -35,23 +35,24 @@ class PlotterSVG extends PlotterBase {
             this.writer.addLine(`<feGaussianBlur in="SourceGraphic" stdDeviation="${infos.blur}"/>`);
             this.writer.endBlock(`</filter>`);
             this.writer.endBlock(`</defs>`);
+
+            this.writer.startBlock(`<g filter="url(#${BLUR_EFFECT_ID})">`);
+
         }
+
+        const margin = 10;
+        this.writer.addLine(`<rect fill="white" stroke="none" x="${-margin}" y="${-margin}" width="${WIDTH + 2 * margin}" height="${HEIGHT + 2 * margin}"/>`);
     }
 
     public finalize(): void {
+        if (this.hasBlur) {
+            this.writer.endBlock(`</g>`);
+        }
         this.writer.endBlock(`</svg>`);
     }
 
-    public drawLines(lines: ILine[], opacity: number, operation: ECompositingOperation, thickness: number): void {
+    public drawLines(lines: ILine[], color: EColor, opacity: number, operation: ECompositingOperation, thickness: number): void {
         if (lines.length >= 1) {
-            const blurAttribute = this.hasBlur ? ` filter="url(#${BLUR_EFFECT_ID})"` : ``;
-
-            if (this.hasBlur) {
-                this.writer.startBlock(`<g${blurAttribute}>`);
-            }
-
-            const margin = 10;
-            this.writer.addLine(`<rect fill="white" stroke="none" x="${-margin}" y="${-margin}" width="${WIDTH + 2 * margin}" height="${HEIGHT + 2 * margin}"/>`);
 
             let strokeColor: string;
             if (useAdvancedCompositing()) {
@@ -67,10 +68,12 @@ class PlotterSVG extends PlotterBase {
                 this.writer.endBlock(`</defs>`);
 
                 const value = Math.ceil(255 * opacity);
-                strokeColor = `rgb(${value}, ${value}, ${value})`;
+                const rawRGB = computeRawColor(color, opacity);
+                strokeColor = `rgb(${rawRGB.r * value}, ${rawRGB.g * value}, ${rawRGB.b * value})`;
             } else {
-                const value = (operation === ECompositingOperation.LIGHTEN) ? 255 : 0;
-                strokeColor = `rgba(${value}, ${value}, ${value}, ${opacity})`;
+                const value = (useAdvancedCompositing()) ? 255 : 0;
+                const rawRGB = computeRawColor(color, opacity);
+                strokeColor = `rgba(${rawRGB.r * value}, ${rawRGB.g * value}, ${rawRGB.b * value}, ${opacity})`;
             }
 
             // lines container
@@ -79,10 +82,6 @@ class PlotterSVG extends PlotterBase {
                 this.writer.addLine(`<line x1="${line.from.x.toFixed(1)}" y1="${line.from.y.toFixed(1)}" x2="${line.to.x.toFixed(1)}" y2="${line.to.y.toFixed(1)}"/>`);
             }
             this.writer.endBlock(`</g>`);
-
-            if (this.hasBlur) {
-                this.writer.endBlock(`</g>`);
-            }
         }
     }
 

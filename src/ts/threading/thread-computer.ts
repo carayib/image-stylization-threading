@@ -3,7 +3,7 @@ import { ISize } from "../interfaces/i-size";
 import { EShape, Parameters } from "../parameters";
 import { PlotterBase } from "../plotter/plotter-base";
 import { Transformation } from "./transformation";
-import { applyCanvasCompositing, ECompositingOperation, resetCanvasCompositing } from "../plotter/compositing";
+import { applyCanvasCompositing, EColor, ECompositingOperation, resetCanvasCompositing } from "../plotter/compositing";
 
 import * as Statistics from "../statistics/statistics";
 
@@ -51,6 +51,16 @@ interface ISegment {
 type IndicatorUpdateFunction = (indicatorId: string, indicatorValue: string) => unknown;
 
 /**
+ * No interpolation.
+ * @returns value in [0, 255]
+ */
+type SamplingFunction = (pixelX: number, pixelY: number) => number;
+
+enum EThreadsMode {
+    MONOCHROME,
+}
+
+/**
  * Class used to compute which thread path is the best choice.
  */
 class ThreadComputer {
@@ -64,7 +74,9 @@ class ThreadComputer {
     private lineOpacity: number;
     private lineThickness: number;
 
-    private threadPegs: IPeg[];
+    private threadsMode: EThreadsMode;
+
+    private threadPegsMonochrome: IPeg[];
     private arePegsTooClose: (peg1: IPeg, peg2: IPeg) => boolean;
 
     public constructor(image: HTMLImageElement) {
@@ -72,6 +84,8 @@ class ThreadComputer {
 
         this.hiddenCanvas = document.createElement("canvas");
         this.hiddenCanvasContext = this.hiddenCanvas.getContext("2d");
+
+        this.threadsMode = EThreadsMode.MONOCHROME;
 
         this.reset(16 / 256, 1);
     }
@@ -81,12 +95,19 @@ class ThreadComputer {
         const lineWidth = 1 * transformation.scaling * this.lineThickness;
 
         const points: IPoint[] = [];
-        for (const peg of this.threadPegs) {
+        for (const peg of this.threadPegsMonochrome) {
             points.push(transformation.transform(peg));
         }
 
         const compositing = Parameters.invertColors ? ECompositingOperation.LIGHTEN : ECompositingOperation.DARKEN;
-        plotter.drawBrokenLine(points, this.lineOpacity, compositing, lineWidth);
+
+        switch (this.threadsMode) {
+            case EThreadsMode.MONOCHROME:
+                plotter.drawBrokenLine(points, EColor.MONOCHROME, this.lineOpacity, compositing, lineWidth);
+                break;
+            default:
+                throw new Error(`Not implemented threads mode '${this.threadsMode}'.`);
+        }
     }
 
     public drawPegs(plotter: PlotterBase): void {
@@ -109,6 +130,8 @@ class ThreadComputer {
     public computeNextSegments(maxMillisecondsTaken: number): boolean {
         const start = performance.now();
 
+        this.sampleCanvasPixel = this.sampleCanvasPixelMonochrome;
+
         const targetNbSegments = Parameters.nbLines;
         if (this.nbSegments === targetNbSegments) {
             // no new segment to compute
@@ -116,14 +139,13 @@ class ThreadComputer {
         } else if (this.nbSegments > targetNbSegments) {
             // we drew too many lines already, removes the excess
             if (targetNbSegments > 0) {
-                this.threadPegs.length = targetNbSegments + 1;
+                this.threadPegsMonochrome.length = targetNbSegments + 1;
             } else {
-                this.threadPegs.length = 0;
+                this.threadPegsMonochrome.length = 0;
             }
-
             this.resetHiddenCanvas();
-            for (let iPeg = 0; iPeg + 1 < this.threadPegs.length; iPeg++) {
-                this.drawSegmentOnHiddenCanvas(this.threadPegs[iPeg], this.threadPegs[iPeg + 1]);
+            for (let iPeg = 0; iPeg + 1 < this.threadPegsMonochrome.length; iPeg++) {
+                this.drawSegmentOnHiddenCanvas(this.threadPegsMonochrome[iPeg], this.threadPegsMonochrome[iPeg + 1]);
             }
             return true;
         }
@@ -145,7 +167,7 @@ class ThreadComputer {
         this.lineOpacity = opacity;
         this.lineThickness = linethickness;
 
-        this.threadPegs = [];
+        this.threadPegsMonochrome = [];
         this.resetHiddenCanvas();
     }
 
@@ -168,28 +190,28 @@ class ThreadComputer {
         }
         opacity *= 0.5;
 
-        applyCanvasCompositing(this.hiddenCanvasContext, opacity, ECompositingOperation.LIGHTEN);
+        applyCanvasCompositing(this.hiddenCanvasContext, EColor.MONOCHROME, opacity, ECompositingOperation.LIGHTEN);
     }
 
     private get nbSegments(): number {
-        return this.threadPegs.length > 1 ? this.threadPegs.length - 1 : 0;
+        return this.threadPegsMonochrome.length > 1 ? this.threadPegsMonochrome.length - 1 : 0;
     }
 
     private computeSegment(): void {
         let lastPeg: IPeg;
         let nextPeg: IPeg;
 
-        if (this.threadPegs.length === 0) {
+        if (this.threadPegsMonochrome.length === 0) {
             const startingSegment = this.computeBestStartingSegment();
-            this.threadPegs.push(startingSegment.peg1);
+            this.threadPegsMonochrome.push(startingSegment.peg1);
             lastPeg = startingSegment.peg1;
             nextPeg = startingSegment.peg2;
         } else {
-            lastPeg = this.threadPegs[this.threadPegs.length - 1];
+            lastPeg = this.threadPegsMonochrome[this.threadPegsMonochrome.length - 1];
             nextPeg = this.computeBestNextPeg(lastPeg);
         }
 
-        this.threadPegs.push(nextPeg);
+        this.threadPegsMonochrome.push(nextPeg);
         this.drawSegmentOnHiddenCanvas(lastPeg, nextPeg);
     }
 
@@ -202,11 +224,11 @@ class ThreadComputer {
         resetCanvasCompositing(this.hiddenCanvasContext);
         this.hiddenCanvasContext.drawImage(this.sourceImage, 0, 0, wantedSize.width, wantedSize.height);
 
-        let computeAdjustedValue: (r: number, g: number, b: number) => number;
+        let computeAdjustedValue: (rawValue: number) => number;
         if (Parameters.invertColors) {
-            computeAdjustedValue = (r: number, g: number, b: number) => 128 - (r + g + b) / 3 / 2;
+            computeAdjustedValue = (rawValue: number) => 128 - rawValue / 2;
         } else {
-            computeAdjustedValue = (r: number, g: number, b: number) => (r + g + b) / 3 / 2;
+            computeAdjustedValue = (rawValue: number) => rawValue / 2;
         }
 
         // change the base level so that pure white becomes medium grey
@@ -214,10 +236,17 @@ class ThreadComputer {
         const canvasData = imageData.data;
         const nbPixels = wantedSize.width * wantedSize.height;
         for (let i = 0; i < nbPixels; i++) {
-            const adjustedValue = computeAdjustedValue(canvasData[4 * i + 0], canvasData[4 * i + 1], canvasData[4 * i + 2]);
-            canvasData[4 * i + 0] = adjustedValue;
-            canvasData[4 * i + 1] = adjustedValue;
-            canvasData[4 * i + 2] = adjustedValue;
+            switch (this.threadsMode) {
+                case EThreadsMode.MONOCHROME:
+                    const averageSourceValue = (canvasData[4 * i + 0] + canvasData[4 * i + 1] + canvasData[4 * i + 2]) / 3;
+                    const adjustedValue = computeAdjustedValue(averageSourceValue);
+                    canvasData[4 * i + 0] = adjustedValue;
+                    canvasData[4 * i + 1] = adjustedValue;
+                    canvasData[4 * i + 2] = adjustedValue;
+                    break;
+                default:
+                    throw new Error(`Threads mode '${this.threadsMode}' not implemented.`);
+            }
         }
         this.hiddenCanvasContext.putImageData(imageData, 0, 0);
 
@@ -345,11 +374,27 @@ class ThreadComputer {
         return mix(top, bottom, fractY);
     }
 
-    // no interpolation
-    private sampleCanvasPixel(pixelX: number, pixelY: number): number {
+    private sampleCanvasPixel: SamplingFunction;
+
+    private sampleCanvasPixelMonochrome(pixelX: number, pixelY: number): number {
         const index = 4 * (pixelX + pixelY * this.hiddenCanvasData.width);
-        return this.hiddenCanvasData.data[index]; // only check the red channel because the hidden canvas is in black and white
+        return this.hiddenCanvasData.data[index + 0]; // only check the red channel because the hidden canvas is in black and white
     }
+
+    // private sampleCanvasPixelRed(pixelX: number, pixelY: number): number {
+    //     const index = 4 * (pixelX + pixelY * this.hiddenCanvasData.width);
+    //     return this.hiddenCanvasData.data[index + 0];
+    // }
+
+    // private sampleCanvasPixelGreen(pixelX: number, pixelY: number): number {
+    //     const index = 4 * (pixelX + pixelY * this.hiddenCanvasData.width);
+    //     return this.hiddenCanvasData.data[index + 1];
+    // }
+
+    // private sampleCanvasPixelBlue(pixelX: number, pixelY: number): number {
+    //     const index = 4 * (pixelX + pixelY * this.hiddenCanvasData.width);
+    //     return this.hiddenCanvasData.data[index + 2];
+    // }
 
     private static computeBestSize(sourceImageSize: ISize, maxSize: number): ISize {
         const maxSourceSide = Math.max(sourceImageSize.width, sourceImageSize.height);

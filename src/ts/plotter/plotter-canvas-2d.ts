@@ -4,7 +4,7 @@ import { ISize } from "../interfaces/i-size";
 
 import "../page-interface-generated";
 import { ILine } from "../interfaces/i-line";
-import { applyCanvasCompositing, ECompositingOperation, resetCanvasCompositing } from "./compositing";
+import { applyCanvasCompositing, EColor, ECompositingOperation, resetCanvasCompositing } from "./compositing";
 
 class PlotterCanvas2D extends PlotterBase {
     private readonly canvas: HTMLCanvasElement;
@@ -49,9 +49,9 @@ class PlotterCanvas2D extends PlotterBase {
         }
     }
 
-    public drawLines(lines: ILine[], opacity: number, operation: ECompositingOperation, thickness: number): void {
+    public drawLines(lines: ILine[], color: EColor, opacity: number, operation: ECompositingOperation, thickness: number): void {
         if (lines.length >= 1) {
-            applyCanvasCompositing(this.context, opacity, operation);
+            applyCanvasCompositing(this.context, color, opacity, operation);
 
             this.context.lineWidth = thickness * this.cssPixel;
 
