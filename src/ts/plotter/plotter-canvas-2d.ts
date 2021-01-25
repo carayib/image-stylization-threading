@@ -4,6 +4,7 @@ import { ISize } from "../interfaces/i-size";
 
 import "../page-interface-generated";
 import { ILine } from "../interfaces/i-line";
+import { applyCanvasCompositing, ECompositingOperation, resetCanvasCompositing } from "./compositing";
 
 class PlotterCanvas2D extends PlotterBase {
     private readonly canvas: HTMLCanvasElement;
@@ -31,6 +32,7 @@ class PlotterCanvas2D extends PlotterBase {
     public initialize(infos: IPlotterInfo): void {
         this.context.fillStyle = infos.backgroundColor;
         this.context.lineJoin = "round";
+        resetCanvasCompositing(this.context);
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
@@ -47,9 +49,10 @@ class PlotterCanvas2D extends PlotterBase {
         }
     }
 
-    public drawLines(lines: ILine[], color: string, thickness: number): void {
+    public drawLines(lines: ILine[], opacity: number, operation: ECompositingOperation, thickness: number): void {
         if (lines.length >= 1) {
-            this.context.strokeStyle = color;
+            applyCanvasCompositing(this.context, opacity, operation);
+
             this.context.lineWidth = thickness * this.cssPixel;
 
             for (const line of lines) {
@@ -59,24 +62,10 @@ class PlotterCanvas2D extends PlotterBase {
                 this.context.stroke();
                 this.context.closePath();
             }
+
+            resetCanvasCompositing(this.context);
         }
     }
-
-    // public drawBrokenLine(points: IPoint[], color: string, thickness: number): void {
-    //     if (points.length >= 2) {
-    //         this.context.strokeStyle = color;
-    //         this.context.lineWidth = thickness;
-    //         this.context.beginPath();
-
-    //         this.context.moveTo(points[0].x * this.cssPixel, points[0].y * this.cssPixel);
-    //         for (let iPoint = 1; iPoint < points.length; iPoint++) {
-    //             this.context.lineTo(points[iPoint].x * this.cssPixel, points[iPoint].y * this.cssPixel);
-    //         }
-
-    //         this.context.stroke();
-    //         this.context.closePath();
-    //     }
-    // }
 
     public drawPoints(points: IPoint[], color: string, diameter: number): void {
         if (points.length > 0) {

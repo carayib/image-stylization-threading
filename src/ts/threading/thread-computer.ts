@@ -3,15 +3,13 @@ import { ISize } from "../interfaces/i-size";
 import { EShape, Parameters } from "../parameters";
 import { PlotterBase } from "../plotter/plotter-base";
 import { Transformation } from "./transformation";
+import { applyCanvasCompositing, ECompositingOperation, resetCanvasCompositing } from "../plotter/compositing";
 
 import * as Statistics from "../statistics/statistics";
 
 const MIN_SAFE_NUMBER = -9007199254740991;
 const HIDDEN_CANVAS_SIZE = 256; // pixels
 const TWO_PI = 2 * Math.PI;
-
-const DEFAULT_COMPOSITING = "source-over";
-const ADDITIVE_COMPOSITING = "lighter";
 
 function clamp(x: number, min: number, max: number): number {
     if (x < min) {
@@ -88,9 +86,8 @@ class ThreadComputer {
             points.push(transformation.transform(peg));
         }
 
-        const baseColor = Parameters.invertColors ? "255,255,255" : "0,0,0";
-        const lineColor = `rgba(${baseColor}, ${this.lineOpacity})`;
-        plotter.drawBrokenLine(points, lineColor, lineWidth);
+        const compositing = Parameters.invertColors ? ECompositingOperation.LIGHTEN : ECompositingOperation.DARKEN;
+        plotter.drawBrokenLine(points, this.lineOpacity, compositing, lineWidth);
     }
 
     public drawPegs(plotter: PlotterBase): void {
@@ -126,14 +123,11 @@ class ThreadComputer {
             }
 
             this.resetHiddenCanvas();
-            this.initializeHiddenCanvasCompositing();
             for (let iPeg = 0; iPeg + 1 < this.threadPegs.length; iPeg++) {
                 this.drawSegmentOnHiddenCanvas(this.threadPegs[iPeg], this.threadPegs[iPeg + 1]);
             }
             return true;
         }
-
-        this.initializeHiddenCanvasCompositing();
 
         while (this.nbSegments < targetNbSegments && performance.now() - start < maxMillisecondsTaken) {
             this.computeSegment();
@@ -180,14 +174,7 @@ class ThreadComputer {
         }
         opacity *= 0.5;
 
-        this.hiddenCanvasContext.globalCompositeOperation = ADDITIVE_COMPOSITING;
-        if (this.hiddenCanvasContext.globalCompositeOperation === ADDITIVE_COMPOSITING) {
-            this.hiddenCanvasContext.strokeStyle = `rgb(${255 * opacity}, ${255 * opacity}, ${255 * opacity})`;
-        } else {
-            Page.Demopage.setErrorMessage("best-compositing-not-supported", `Your browser does not support canvas2D compositing ${ADDITIVE_COMPOSITING}, which might lead to artifacts.`);
-            this.hiddenCanvasContext.strokeStyle = `rgba(255,255,255,${opacity})`;
-            this.hiddenCanvasContext.globalCompositeOperation = DEFAULT_COMPOSITING;
-        }
+        applyCanvasCompositing(this.hiddenCanvasContext, opacity, ECompositingOperation.LIGHTEN);
     }
 
     private get nbSegments(): number {
@@ -219,7 +206,7 @@ class ThreadComputer {
         this.hiddenCanvas.width = wantedSize.width;
         this.hiddenCanvas.height = wantedSize.height;
 
-        this.hiddenCanvasContext.globalCompositeOperation = DEFAULT_COMPOSITING;
+        resetCanvasCompositing(this.hiddenCanvasContext);
         this.hiddenCanvasContext.drawImage(this.sourceImage, 0, 0, wantedSize.width, wantedSize.height);
 
         let computeAdjustedValue: (r: number, g: number, b: number) => number;
@@ -241,6 +228,7 @@ class ThreadComputer {
         }
         this.hiddenCanvasContext.putImageData(imageData, 0, 0);
 
+        this.initializeHiddenCanvasCompositing();
         Statistics.stopTimer("thread-computer.resetHiddenCanvas");
     }
 

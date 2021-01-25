@@ -22,10 +22,10 @@ function plot(threadComputer: ThreadComputer, plotter: PlotterBase): void {
     plotter.resize();
     plotter.initialize(plotterInfos);
 
+    threadComputer.drawThread(plotter);
     if (Parameters.displayPegs) {
         threadComputer.drawPegs(plotter);
     }
-    threadComputer.drawThread(plotter);
 
     plotter.finalize();
     Statistics.stopTimer("main.plot");
