@@ -2,6 +2,7 @@ import { ILine } from "../interfaces/i-line";
 import { IPoint } from "../interfaces/i-point";
 import { ECompositingOperation, useAdvancedCompositing } from "./compositing";
 import { PlotterBase, IPlotterInfo, ISize } from "./plotter-base";
+import { XMLWriter } from "./xml-writer";
 
 const WIDTH = 1000;
 const HEIGHT = 1000;
@@ -9,8 +10,8 @@ const HEIGHT = 1000;
 const BLUR_EFFECT_ID = "gaussianBlur";
 
 class PlotterSVG extends PlotterBase {
-    private stringParts: string[];
     private hasBlur: boolean;
+    private writer: XMLWriter;
 
     public constructor() {
         super();
@@ -21,24 +22,24 @@ class PlotterSVG extends PlotterBase {
     }
 
     public initialize(infos: IPlotterInfo): void {
+        this.writer = new XMLWriter();
+
         this.hasBlur = infos.blur > 0;
 
-        this.stringParts = [];
-
-        this.stringParts.push(`<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n`);
-        this.stringParts.push(`<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 ${WIDTH} ${HEIGHT}">\n`);
+        this.writer.addLine(`<?xml version="1.0" encoding="UTF-8" standalone="no"?>`);
+        this.writer.startBlock(`<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 ${WIDTH} ${HEIGHT}">`);
 
         if (this.hasBlur) {
-            this.stringParts.push(`\t<defs>\n`);
-            this.stringParts.push(`\t\t<filter id="${BLUR_EFFECT_ID}" x="0" y="0">\n`);
-            this.stringParts.push(`\t\t\t<feGaussianBlur in="SourceGraphic" stdDeviation="${infos.blur}"/>\n`);
-            this.stringParts.push(`\t\t</filter>\n`);
-            this.stringParts.push(`\t</defs>\n`);
+            this.writer.startBlock(`<defs>`);
+            this.writer.startBlock(`<filter id="${BLUR_EFFECT_ID}" x="0" y="0">`);
+            this.writer.addLine(`<feGaussianBlur in="SourceGraphic" stdDeviation="${infos.blur}"/>`);
+            this.writer.endBlock(`</filter>`);
+            this.writer.endBlock(`</defs>`);
         }
     }
 
     public finalize(): void {
-        this.stringParts.push(`</svg>\n`);
+        this.writer.endBlock(`</svg>`);
     }
 
     public drawLines(lines: ILine[], opacity: number, operation: ECompositingOperation, thickness: number): void {
@@ -46,24 +47,24 @@ class PlotterSVG extends PlotterBase {
             const blurAttribute = this.hasBlur ? ` filter="url(#${BLUR_EFFECT_ID})"` : ``;
 
             if (this.hasBlur) {
-                this.stringParts.push(`\t<g${blurAttribute}>\n`);
+                this.writer.startBlock(`<g${blurAttribute}>`);
             }
 
             const margin = 10;
-            this.stringParts.push(`\t\t<rect fill="white" stroke="none" x="${-margin}" y="${-margin}" width="${WIDTH + 2 * margin}" height="${HEIGHT + 2 * margin}"/>\n`);
+            this.writer.addLine(`<rect fill="white" stroke="none" x="${-margin}" y="${-margin}" width="${WIDTH + 2 * margin}" height="${HEIGHT + 2 * margin}"/>`);
 
             let strokeColor: string;
             if (useAdvancedCompositing()) {
-                this.stringParts.push(`\t\t<defs>\n`);
-                this.stringParts.push(`\t\t\t<style type="text/css">\n`);
-                this.stringParts.push(`\t\t\t\t<![CDATA[\n`);
-                this.stringParts.push(`\t\t\t\t\tline { mix-blend-mode: difference; }\n`);
+                this.writer.startBlock(`<defs>`);
+                this.writer.startBlock(`<style type="text/css">`);
+                this.writer.startBlock(`<![CDATA[`);
+                this.writer.addLine(`line { mix-blend-mode: difference; }`);
                 if (operation === ECompositingOperation.LIGHTEN) {
-                    this.stringParts.push(`\t\t\t\t\tsvg { filter: invert(1); background: black; }\n`);
+                    this.writer.addLine(`svg { filter: invert(1); background: black; }`);
                 }
-                this.stringParts.push(`\t\t\t\t]]>\n`);
-                this.stringParts.push(`\t\t\t</style>\n`);
-                this.stringParts.push(`\t\t</defs>\n`);
+                this.writer.endBlock(`]]>`);
+                this.writer.endBlock(`</style>`);
+                this.writer.endBlock(`</defs>`);
 
                 const value = Math.ceil(255 * opacity);
                 strokeColor = `rgb(${value}, ${value}, ${value})`;
@@ -73,32 +74,31 @@ class PlotterSVG extends PlotterBase {
             }
 
             // lines container
-            this.stringParts.push(`\t\t<g stroke="${strokeColor}" stroke-width="${thickness}" stroke-linecap="round" fill="none">\n`);
+            this.writer.startBlock(`<g stroke="${strokeColor}" stroke-width="${thickness}" stroke-linecap="round" fill="none">`);
             for (const line of lines) {
-                this.stringParts.push(`\t\t\t<line x1="${line.from.x.toFixed(1)}" y1="${line.from.y.toFixed(1)}" x2="${line.to.x.toFixed(1)}" y2="${line.to.y.toFixed(1)}"/>\n`);
+                this.writer.addLine(`<line x1="${line.from.x.toFixed(1)}" y1="${line.from.y.toFixed(1)}" x2="${line.to.x.toFixed(1)}" y2="${line.to.y.toFixed(1)}"/>`);
             }
-            this.stringParts.push(`\t\t</g>\n`);
+            this.writer.endBlock(`</g>`);
 
             if (this.hasBlur) {
-                this.stringParts.push(`\t</g>\n`);
+                this.writer.endBlock(`</g>`);
             }
         }
     }
 
     public drawPoints(points: IPoint[], color: string, diameter: number): void {
         if (points.length > 0) {
-            this.stringParts.push(`\t\t<g fill="${color}" stroke="none">\n`);
-
+            this.writer.startBlock(`<g fill="${color}" stroke="none">`);
             for (const point of points) {
-                this.stringParts.push(`\t\t\t<circle cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="${0.5 * diameter}"/>\n`);
+                this.writer.addLine(`<circle cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="${0.5 * diameter}"/>`);
             }
-            this.stringParts.push(`\t\t</g>\n`);
+            this.writer.endBlock(`</g>`);
         }
     }
 
     public export(): string {
         const start = Date.now();
-        const result = this.stringParts.join("");
+        const result = this.writer.result;
         console.log(`Concatenation took ${Date.now() - start} ms.`);
         return result;
     }
