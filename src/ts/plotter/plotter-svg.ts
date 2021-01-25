@@ -68,11 +68,11 @@ class PlotterSVG extends PlotterBase {
                 this.writer.endBlock(`</defs>`);
 
                 const value = Math.ceil(255 * opacity);
-                const rawRGB = computeRawColor(color, opacity);
+                const rawRGB = computeRawColor(color);
                 strokeColor = `rgb(${rawRGB.r * value}, ${rawRGB.g * value}, ${rawRGB.b * value})`;
             } else {
                 const value = (useAdvancedCompositing()) ? 255 : 0;
-                const rawRGB = computeRawColor(color, opacity);
+                const rawRGB = computeRawColor(color);
                 strokeColor = `rgba(${rawRGB.r * value}, ${rawRGB.g * value}, ${rawRGB.b * value}, ${opacity})`;
             }
 

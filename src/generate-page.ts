@@ -83,6 +83,24 @@ const data = {
             title: "Thread",
             controls: [
                 {
+                    type: Demopage.supportedControls.Tabs,
+                    title: "Mode",
+                    id: "thread-mode-tabs-id",
+                    unique: true,
+                    options: [
+                        {
+                            label: "Monochrome",
+                            value: "0",
+                            checked: true,
+                        },
+                        {
+                            label: "Three colors",
+                            value: "1",
+                            checked: false,
+                        },
+                    ]
+                },
+                {
                     type: Demopage.supportedControls.Range,
                     title: "Segments count",
                     id: "lines-range-id",

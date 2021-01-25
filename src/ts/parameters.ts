@@ -7,6 +7,7 @@ const controlId = {
     SHAPE: "shape-tabs-id",
     NB_PEGS: "pegs-range-id",
     NB_LINES: "lines-range-id",
+    MODE: "thread-mode-tabs-id",
     LINES_OPACITY: "opacity-range-id",
     LINES_THICKNESS: "thickness-range-id",
     DISPLAY_PEGS: "display-pegs-checkbox-id",
@@ -19,6 +20,11 @@ const controlId = {
 enum EShape {
     RECTANGLE = "0",
     ELLIPSIS = "1",
+}
+
+enum EMode {
+    MONOCHROME = "0",
+    COLORS = "1",
 }
 
 type Observer = () => unknown;
@@ -38,6 +44,7 @@ function triggerReset(): void {
 
 Page.Tabs.addObserver(controlId.SHAPE, triggerReset);
 Page.Range.addLazyObserver(controlId.NB_PEGS, triggerReset);
+Page.Tabs.addObserver(controlId.MODE, triggerReset);
 Page.Range.addLazyObserver(controlId.LINES_OPACITY, triggerReset);
 Page.Range.addLazyObserver(controlId.LINES_THICKNESS, triggerReset);
 Page.Checkbox.addObserver(controlId.DISPLAY_PEGS, triggerRedraw);
@@ -81,6 +88,10 @@ abstract class Parameters {
 
     public static get pegsSpacing(): number {
         return 11 - Page.Range.getValue(controlId.NB_PEGS);
+    }
+
+    public static get mode(): EMode {
+        return Page.Tabs.getValues(controlId.MODE)[0] as EMode;
     }
 
     public static get nbLines(): number {
@@ -128,4 +139,8 @@ abstract class Parameters {
     }
 }
 
-export { Parameters, EShape }
+export {
+    Parameters,
+    EMode,
+    EShape,
+};

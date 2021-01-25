@@ -21,7 +21,7 @@ function useAdvancedCompositing(): boolean {
     return supportsAdvancedCompositing;
 }
 
-function computeRawColor(color: EColor, operation: ECompositingOperation): IColor {
+function computeRawColor(color: EColor): IColor {
     if (color === EColor.MONOCHROME) {
         return { r: 1, g: 1, b: 1 };
     }
@@ -32,11 +32,6 @@ function computeRawColor(color: EColor, operation: ECompositingOperation): IColo
         b: (color === EColor.BLUE) ? 1 : 0,
     };
 
-    if (supportsAdvancedCompositing && operation === ECompositingOperation.DARKEN) {
-        result.r = 1 - result.r;
-        result.g = 1 - result.g;
-        result.b = 1 - result.b;
-    }
     return result;
 }
 
@@ -49,7 +44,7 @@ function applyCanvasCompositing(context: CanvasRenderingContext2D, color: EColor
         context.globalCompositeOperation = targetOperation;
         if (context.globalCompositeOperation === targetOperation) {
             const value = Math.ceil(255 * opacity);
-            const rawRGB = computeRawColor(color, operation);
+            const rawRGB = computeRawColor(color);
             context.strokeStyle = `rgb(${rawRGB.r * value}, ${rawRGB.g * value}, ${rawRGB.b * value})`;
             return; // success
         } else {
@@ -62,7 +57,7 @@ function applyCanvasCompositing(context: CanvasRenderingContext2D, color: EColor
     {
         resetCanvasCompositing(context);
         const value = (supportsAdvancedCompositing) ? 255 : 0;
-        const rawRGB = computeRawColor(color, operation);
+        const rawRGB = computeRawColor(color);
         context.strokeStyle = `rgba(${rawRGB.r * value}, ${rawRGB.g * value}, ${rawRGB.b * value}, ${opacity})`;
     }
 }
