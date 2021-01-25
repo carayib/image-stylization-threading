@@ -3,10 +3,21 @@ import { IPeg } from "./thread-computer";
 
 import { IThreadToGrow, ThreadComputerSpecific, ThreadsIterator } from "./thread-computer-specific";
 
+interface ISegmentsRepartition {
+    red: number;
+    green: number;
+    blue: number;
+}
+
 class ThreadComputerRedBlueGreen extends ThreadComputerSpecific {
     private threadPegsRed: IPeg[] = [];
     private threadPegsGreen: IPeg[] = [];
     private threadPegsBlue: IPeg[] = [];
+
+    // indicators describing the colors repartition from the source image
+    private frequencyRed: number;
+    private frequencyGreen: number;
+    private frequencyBlue: number;
 
     public get totalNbSegments(): number {
         const totalNbPegs = this.threadPegsRed.length + this.threadPegsGreen.length + this.threadPegsBlue.length;
@@ -14,14 +25,11 @@ class ThreadComputerRedBlueGreen extends ThreadComputerSpecific {
     }
 
     public lowerNbSegments(targetNumber: number): void {
-        const baseSegmentsCount = Math.floor(targetNumber / 3);
-        const nbThreadsForRed = baseSegmentsCount + ((targetNumber % 3 >= 1) ? 1 : 0);
-        const nbThreadsForGreen = baseSegmentsCount + ((targetNumber % 3 >= 2) ? 1 : 0);
-        const nbThreadsForBlue = baseSegmentsCount;
+        const repartition = this.computeIdealSegmentsRepartition(targetNumber);
 
-        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsRed, nbThreadsForRed);
-        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsGreen, nbThreadsForGreen);
-        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsBlue, nbThreadsForBlue);
+        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsRed, Math.floor(repartition.red));
+        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsGreen, Math.floor(repartition.green));
+        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsBlue, Math.floor(repartition.blue));
     }
 
     public iterateOnThreads(callback: ThreadsIterator): void {
@@ -31,26 +39,30 @@ class ThreadComputerRedBlueGreen extends ThreadComputerSpecific {
     }
 
     public getThreadToGrow(): IThreadToGrow {
-        const segmentId = this.totalNbSegments % 3;
-        if (segmentId === 0) {
+        const repartition = this.computeIdealSegmentsRepartition(this.totalNbSegments + 1);
+        if (repartition.red > 0 && this.threadPegsRed.length < repartition.red + 1) {
             return {
                 thread: this.threadPegsRed,
                 color: EColor.RED,
             };
-        } else if (segmentId === 1) {
+        } else if (repartition.green > 0 && this.threadPegsGreen.length < repartition.green + 1) {
             return {
                 thread: this.threadPegsGreen,
                 color: EColor.GREEN,
             };
-        } else {
-            return {
-                thread: this.threadPegsBlue,
-                color: EColor.BLUE,
-            };
         }
+
+        return {
+            thread: this.threadPegsBlue,
+            color: EColor.BLUE,
+        };
     }
 
     public adjustCanvasData(data: Uint8ClampedArray, blackBackground: boolean): void {
+        let cumulatedRed = 0;
+        let cumulatedGreen = 0;
+        let cumulatedBlue = 0;
+
         let computeAdjustedValue: (rawValue: number) => number;
         if (blackBackground) {
             computeAdjustedValue = (rawValue: number) => (255 - rawValue) / 2;
@@ -60,10 +72,18 @@ class ThreadComputerRedBlueGreen extends ThreadComputerSpecific {
 
         const nbPixels = data.length / 4;
         for (let i = 0; i < nbPixels; i++) {
+            cumulatedRed += data[4 * i + 0];
+            cumulatedGreen += data[4 * i + 1];
+            cumulatedBlue += data[4 * i + 2];
+
             data[4 * i + 0] = computeAdjustedValue(data[4 * i + 0]);
             data[4 * i + 1] = computeAdjustedValue(data[4 * i + 1]);
             data[4 * i + 2] = computeAdjustedValue(data[4 * i + 2]);
         }
+
+        this.frequencyRed = cumulatedRed / (cumulatedRed + cumulatedGreen + cumulatedBlue);
+        this.frequencyGreen = cumulatedGreen / (cumulatedRed + cumulatedGreen + cumulatedBlue);
+        this.frequencyBlue = cumulatedBlue / (cumulatedRed + cumulatedGreen + cumulatedBlue);
     }
 
     public enableSamplingFor(color: EColor): void {
@@ -79,6 +99,17 @@ class ThreadComputerRedBlueGreen extends ThreadComputerSpecific {
         this.sampleCanvas = (data: Uint8ClampedArray, index: number) => {
             return data[index + channel];
         }
+    }
+
+    private computeIdealSegmentsRepartition(totalNbSegments: number): ISegmentsRepartition {
+        const repartition = {
+            red: Math.floor(totalNbSegments * this.frequencyRed),
+            green: Math.floor(totalNbSegments * this.frequencyGreen),
+            blue: Math.floor(totalNbSegments * this.frequencyBlue),
+        };
+
+
+        return repartition;
     }
 }
 
