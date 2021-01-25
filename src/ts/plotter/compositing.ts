@@ -49,7 +49,7 @@ function applyCanvasCompositing(context: CanvasRenderingContext2D, color: EColor
         context.globalCompositeOperation = targetOperation;
         if (context.globalCompositeOperation === targetOperation) {
             const value = Math.ceil(255 * opacity);
-            const rawRGB = computeRawColor(color, opacity);
+            const rawRGB = computeRawColor(color, operation);
             context.strokeStyle = `rgb(${rawRGB.r * value}, ${rawRGB.g * value}, ${rawRGB.b * value})`;
             return; // success
         } else {
@@ -62,7 +62,7 @@ function applyCanvasCompositing(context: CanvasRenderingContext2D, color: EColor
     {
         resetCanvasCompositing(context);
         const value = (supportsAdvancedCompositing) ? 255 : 0;
-        const rawRGB = computeRawColor(color, opacity);
+        const rawRGB = computeRawColor(color, operation);
         context.strokeStyle = `rgba(${rawRGB.r * value}, ${rawRGB.g * value}, ${rawRGB.b * value}, ${opacity})`;
     }
 }
