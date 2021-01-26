@@ -123,9 +123,9 @@ class ThreadRedBlueGreen extends ThreadBase {
         };
 
         while (repartition.red + repartition.green + repartition.blue < totalNbSegments) {
-            const currentFrequencyRed = repartition.red / (repartition.red + repartition.green + repartition.blue);
-            const currentFrequencyGreen = repartition.green / (repartition.red + repartition.green + repartition.blue);
-            const currentFrequencyBlue = repartition.blue / (repartition.red + repartition.green + repartition.blue);
+            const currentFrequencyRed = repartition.red / Math.max(1, repartition.red + repartition.green + repartition.blue);
+            const currentFrequencyGreen = repartition.green / Math.max(1, repartition.red + repartition.green + repartition.blue);
+            const currentFrequencyBlue = repartition.blue / Math.max(1, repartition.red + repartition.green + repartition.blue);
 
             const gapRed = idealRed - currentFrequencyRed;
             const gapGreen = idealGreen - currentFrequencyGreen;
