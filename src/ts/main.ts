@@ -8,13 +8,9 @@ import { PlotterSVG } from "./plotter/plotter-svg";
 
 import { ThreadComputer } from "./threading/thread-computer";
 
-import * as Statistics from "./statistics/statistics";
-
 import "./page-interface-generated";
 
 function plot(threadComputer: ThreadComputer, plotter: PlotterBase, nbSegmentsToIgnore: number): void {
-    Statistics.startTimer("main.plot");
-
     if (nbSegmentsToIgnore >= threadComputer.nbSegments) {
         return;
     }
@@ -38,8 +34,6 @@ function plot(threadComputer: ThreadComputer, plotter: PlotterBase, nbSegmentsTo
     } else {
         threadComputer.drawThread(plotter, nbSegmentsToIgnore);
     }
-
-    Statistics.stopTimer("main.plot");
 }
 
 function main(): void {
@@ -50,7 +44,6 @@ function main(): void {
     Parameters.addRedrawObserver(() => nbSegmentsToIgnore = 0);
     Parameters.addResetObserver(() => needToReset = true);
 
-    // let i = 0;
     let nbSegmentsToIgnore = 0;
     let indicatorsNeedUpdate = true;
     function mainLoop(): void {
@@ -75,11 +68,6 @@ function main(): void {
             if (Parameters.debug) {
                 threadComputer.drawDebugView(canvasPlotter.context);
             }
-
-            // i++;
-            // if (i % 500 === 0) {
-            //     Statistics.print(console.log);
-            // }
         }
 
         requestAnimationFrame(mainLoop);
@@ -103,10 +91,8 @@ function main(): void {
     Page.Canvas.showLoader(true);
     const defaultImage = new Image();
     defaultImage.addEventListener("load", () => {
-        Statistics.stopTimer("load-default-image");
         onNewImage(defaultImage);
     });
-    Statistics.startTimer("load-default-image", true);
     defaultImage.src = "./resources/cat.jpg";
 
     Parameters.addDownloadObserver(() => {

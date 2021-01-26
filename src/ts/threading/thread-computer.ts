@@ -5,8 +5,6 @@ import { PlotterBase } from "../plotter/plotter-base";
 import { Transformation } from "./transformation";
 import { applyCanvasCompositing, EColor, ECompositingOperation, resetCanvasCompositing } from "../plotter/compositing";
 
-import * as Statistics from "../statistics/statistics";
-
 import { ThreadMonochrome } from "./thread/thread-monochrome";
 import { ThreadRedBlueGreen } from "./thread/thread-red-green-blue";
 import { ThreadBase } from "./thread/thread-base";
@@ -212,7 +210,6 @@ class ThreadComputer {
     }
 
     private resetHiddenCanvas(): void {
-        Statistics.startTimer("thread-computer.resetHiddenCanvas", true);
         const wantedSize = ThreadComputer.computeBestSize(this.sourceImage, HIDDEN_CANVAS_SIZE);
         this.hiddenCanvas.width = wantedSize.width;
         this.hiddenCanvas.height = wantedSize.height;
@@ -226,7 +223,6 @@ class ThreadComputer {
         this.hiddenCanvasContext.putImageData(imageData, 0, 0);
 
         this.initializeHiddenCanvasCompositing();
-        Statistics.stopTimer("thread-computer.resetHiddenCanvas");
     }
 
     private computeTransformation(targetSize: ISize): Transformation {
@@ -234,8 +230,6 @@ class ThreadComputer {
     }
 
     private drawSegmentOnHiddenCanvas(peg1: IPeg, peg2: IPeg): void {
-        Statistics.startTimer("thread-computer.drawSegmentOnHiddenCanvas", true);
-
         this.hiddenCanvasContext.beginPath();
         this.hiddenCanvasContext.moveTo(peg1.x, peg1.y);
         this.hiddenCanvasContext.lineTo(peg2.x, peg2.y);
@@ -244,7 +238,6 @@ class ThreadComputer {
 
         // invalidate CPU data
         this.hiddenCanvasData = null;
-        Statistics.stopTimer("thread-computer.drawSegmentOnHiddenCanvas");
     }
 
     private computeBestStartingSegment(): ISegment {
@@ -292,18 +285,15 @@ class ThreadComputer {
     }
 
     private uploadCanvasDataToCPU(): void {
-        Statistics.startTimer("thread-computer.computeSegmentPotential.uploadCanvasDataToCPU", true);
         if (this.hiddenCanvasData === null) {
             const width = this.hiddenCanvas.width;
             const height = this.hiddenCanvas.height;
             this.hiddenCanvasData = this.hiddenCanvasContext.getImageData(0, 0, width, height);
         }
-        Statistics.stopTimer("thread-computer.computeSegmentPotential.uploadCanvasDataToCPU");
     }
 
     /* The higher the result, the better a choice the thread is. */
     private computeSegmentPotential(peg1: IPeg, peg2: IPeg): number {
-        Statistics.startTimer("thread-computer.computeSegmentPotential", true);
         this.uploadCanvasDataToCPU();
 
         let squaredError = 0;
@@ -322,7 +312,7 @@ class ThreadComputer {
             const contribution = 127 - finalValue;
             squaredError += contribution;
         }
-        Statistics.stopTimer("thread-computer.computeSegmentPotential");
+
         return squaredError / nbSamples;
     }
 
@@ -364,8 +354,6 @@ class ThreadComputer {
     }
 
     private computePegs(): IPeg[] {
-        Statistics.startTimer("thread-computer.computePegs", true);
-
         const domainSize: ISize = this.hiddenCanvas;
         const pegs: IPeg[] = [];
 
@@ -424,7 +412,6 @@ class ThreadComputer {
             }
         }
 
-        Statistics.stopTimer("thread-computer.computePegs");
         return pegs;
     }
 }
