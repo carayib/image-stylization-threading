@@ -82,6 +82,12 @@ class ThreadComputerRedBlueGreen extends ThreadComputerSpecific {
             data[4 * i + 2] = computeAdjustedValue(data[4 * i + 2]);
         }
 
+        if (!blackBackground) {
+            cumulatedRed = 255 * nbPixels - cumulatedRed;
+            cumulatedGreen = 255 * nbPixels - cumulatedGreen;
+            cumulatedBlue = 255 * nbPixels - cumulatedBlue;
+        }
+
         const totalColor = cumulatedRed + cumulatedGreen + cumulatedBlue;
         this.frequencyRed = cumulatedRed / totalColor;
         this.frequencyGreen = cumulatedGreen / totalColor;
