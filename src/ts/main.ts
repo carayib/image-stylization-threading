@@ -12,46 +12,56 @@ import * as Statistics from "./statistics/statistics";
 
 import "./page-interface-generated";
 
-function plot(threadComputer: ThreadComputer, plotter: PlotterBase): void {
+function plot(threadComputer: ThreadComputer, plotter: PlotterBase, nbSegmentsToIgnore: number): void {
     Statistics.startTimer("main.plot");
-    const plotterInfos: IPlotterInfo = {
-        backgroundColor: Parameters.invertColors ? "black" : "white",
-        blur: Parameters.blur,
-    };
 
-    plotter.resize();
-    plotter.initialize(plotterInfos);
-
-    threadComputer.drawThread(plotter);
-    if (Parameters.displayPegs) {
-        threadComputer.drawPegs(plotter);
+    if (nbSegmentsToIgnore >= threadComputer.nbSegments) {
+        return;
     }
 
-    plotter.finalize();
+    const drawFromScratch = (nbSegmentsToIgnore === 0);
+    if (drawFromScratch) {
+        const plotterInfos: IPlotterInfo = {
+            backgroundColor: Parameters.invertColors ? "black" : "white",
+            blur: Parameters.blur,
+        };
+
+        plotter.resize();
+        plotter.initialize(plotterInfos);
+
+        if (Parameters.displayPegs) {
+            threadComputer.drawPegs(plotter);
+        }
+
+        threadComputer.drawThread(plotter, 0);
+        plotter.finalize();
+    } else {
+        threadComputer.drawThread(plotter, nbSegmentsToIgnore);
+    }
+
     Statistics.stopTimer("main.plot");
 }
 
 function main(): void {
     const canvasPlotter = new PlotterCanvas2D();
     let threadComputer: ThreadComputer = null;
-    let needToRedraw = true;
     let needToReset = true;
 
-    Parameters.addRedrawObserver(() => needToRedraw = true);
+    Parameters.addRedrawObserver(() => nbSegmentsToIgnore = 0);
     Parameters.addResetObserver(() => needToReset = true);
 
     // let i = 0;
+    let nbSegmentsToIgnore = 0;
     let indicatorsNeedUpdate = true;
     function mainLoop(): void {
         if (threadComputer !== null) {
             if (needToReset) {
                 threadComputer.reset(Parameters.linesOpacity, Parameters.linesThickness);
                 needToReset = false;
-                needToRedraw = true;
+                nbSegmentsToIgnore = 0;
             }
 
             const computedSomething = threadComputer.computeNextSegments(20);
-            needToRedraw = needToRedraw || computedSomething;
 
             indicatorsNeedUpdate = indicatorsNeedUpdate || computedSomething;
             if (indicatorsNeedUpdate && Parameters.showIndicators) {
@@ -59,10 +69,8 @@ function main(): void {
                 indicatorsNeedUpdate = false;
             }
 
-            if (needToRedraw) {
-                plot(threadComputer, canvasPlotter);
-                needToRedraw = !computedSomething;
-            }
+            plot(threadComputer, canvasPlotter, nbSegmentsToIgnore);
+            nbSegmentsToIgnore = threadComputer.nbSegments;
 
             if (Parameters.debug) {
                 threadComputer.drawDebugView(canvasPlotter.context);
@@ -103,7 +111,7 @@ function main(): void {
 
     Parameters.addDownloadObserver(() => {
         const svgPlotter = new PlotterSVG();
-        plot(threadComputer, svgPlotter);
+        plot(threadComputer, svgPlotter, 0);
         const svgString = svgPlotter.export();
         const filename = "image-as-threading.svg";
         Helpers.downloadTextFile(svgString, filename);

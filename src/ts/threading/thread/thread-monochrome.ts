@@ -14,8 +14,8 @@ class ThreadMonochrome extends ThreadBase {
         ThreadBase.lowerNbSegmentsForThread(this.threadPegs, targetNumber);
     }
 
-    public iterateOnThreads(callback: ThreadsIterator): void {
-        callback(this.threadPegs, EColor.MONOCHROME);
+    public iterateOnThreads(nbSegmentsToIgnore: number, callback: ThreadsIterator): void {
+        ThreadBase.iterateOnThread(this.threadPegs, EColor.MONOCHROME, nbSegmentsToIgnore, callback);
     }
 
     public getThreadToGrow(): IThreadToGrow {

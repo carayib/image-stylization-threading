@@ -82,12 +82,12 @@ class ThreadComputer {
         this.reset(16 / 256, 1);
     }
 
-    public drawThread(plotter: PlotterBase): void {
+    public drawThread(plotter: PlotterBase, nbSegmentsToIgnore: number): void {
         const transformation = this.computeTransformation(plotter.size);
         const lineWidth = 1 * transformation.scaling * this.lineThickness;
         const compositing = Parameters.invertColors ? ECompositingOperation.LIGHTEN : ECompositingOperation.DARKEN;
 
-        this.child.iterateOnThreads((thread: IPeg[], color: EColor) => {
+        this.child.iterateOnThreads(nbSegmentsToIgnore, (thread: IPeg[], color: EColor) => {
             const points: IPoint[] = [];
             for (const peg of thread) {
                 points.push(transformation.transform(peg));
@@ -127,7 +127,7 @@ class ThreadComputer {
 
             // redraw the hidden canvas from scratch
             this.resetHiddenCanvas();
-            this.child.iterateOnThreads((thread: IPeg[], color: EColor) => {
+            this.child.iterateOnThreads(0, (thread: IPeg[], color: EColor) => {
                 applyCanvasCompositing(this.hiddenCanvasContext, color, this.lineOpacityInternal, ECompositingOperation.LIGHTEN);
 
                 for (let iPeg = 0; iPeg + 1 < thread.length; iPeg++) {
@@ -177,6 +177,10 @@ class ThreadComputer {
 
     }
 
+    public get nbSegments(): number {
+        return this.child.totalNbSegments;
+    }
+
     private initializeHiddenCanvasCompositing(): void {
         if (this.lineThickness <= 1) {
             // do not go below a line width of 1 because it creates artifact.
@@ -187,10 +191,6 @@ class ThreadComputer {
             this.lineOpacityInternal = 0.5 * this.lineOpacity;
             this.hiddenCanvasContext.lineWidth = this.lineThickness;
         }
-    }
-
-    private get nbSegments(): number {
-        return this.child.totalNbSegments;
     }
 
     private computeSegment(thread: IPeg[]): void {

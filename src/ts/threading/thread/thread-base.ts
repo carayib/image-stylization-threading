@@ -15,7 +15,7 @@ abstract class ThreadBase {
 
     public abstract lowerNbSegments(targetNumber: number): void;
 
-    public abstract iterateOnThreads(callback: ThreadsIterator): void;
+    public abstract iterateOnThreads(nbSegmentsToIgnore: number, callback: ThreadsIterator): void;
 
     public abstract getThreadToGrow(): IThreadToGrow;
 
@@ -38,6 +38,14 @@ abstract class ThreadBase {
 
     protected static computeNbSegments(thread: IPeg[]): number {
         return (thread.length > 1) ? thread.length - 1 : 0;
+    }
+
+    public static iterateOnThread(thread: IPeg[], color: EColor, fromSegmentNumber: number, callback: ThreadsIterator): void {
+        const threadLength = ThreadBase.computeNbSegments(thread);
+        if (fromSegmentNumber < threadLength) {
+            const threadPart = thread.slice(fromSegmentNumber);
+            callback(threadPart, color);
+        }
     }
 }
 

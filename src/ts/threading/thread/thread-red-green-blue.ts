@@ -33,10 +33,12 @@ class ThreadRedBlueGreen extends ThreadBase {
         ThreadBase.lowerNbSegmentsForThread(this.threadPegsBlue, repartition.blue);
     }
 
-    public iterateOnThreads(callback: ThreadsIterator): void {
-        callback(this.threadPegsRed, EColor.RED);
-        callback(this.threadPegsGreen, EColor.GREEN);
-        callback(this.threadPegsBlue, EColor.BLUE);
+    public iterateOnThreads(nbSegmentsToIgnore: number, callback: ThreadsIterator): void {
+        const repartition = this.computeIdealSegmentsRepartition(nbSegmentsToIgnore);
+
+        ThreadBase.iterateOnThread(this.threadPegsRed, EColor.RED, repartition.red, callback);
+        ThreadBase.iterateOnThread(this.threadPegsGreen, EColor.GREEN, repartition.green, callback);
+        ThreadBase.iterateOnThread(this.threadPegsBlue, EColor.BLUE, repartition.blue, callback);
     }
 
     public getThreadToGrow(): IThreadToGrow {
