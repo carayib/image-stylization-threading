@@ -28,9 +28,9 @@ class ThreadComputerRedBlueGreen extends ThreadComputerSpecific {
     public lowerNbSegments(targetNumber: number): void {
         const repartition = this.computeIdealSegmentsRepartition(targetNumber);
 
-        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsRed, Math.floor(repartition.red));
-        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsGreen, Math.floor(repartition.green));
-        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsBlue, Math.floor(repartition.blue));
+        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsRed, repartition.red);
+        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsGreen, repartition.green);
+        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsBlue, repartition.blue);
     }
 
     public iterateOnThreads(callback: ThreadsIterator): void {
@@ -103,12 +103,33 @@ class ThreadComputerRedBlueGreen extends ThreadComputerSpecific {
     }
 
     private computeIdealSegmentsRepartition(totalNbSegments: number): ISegmentsRepartition {
+        const idealRed = totalNbSegments * this.frequencyRed;
+        const idealGreen = totalNbSegments * this.frequencyGreen;
+        const idealBlue = totalNbSegments * this.frequencyBlue;
+
         const repartition = {
-            red: Math.floor(totalNbSegments * this.frequencyRed),
-            green: Math.floor(totalNbSegments * this.frequencyGreen),
-            blue: Math.floor(totalNbSegments * this.frequencyBlue),
+            red: Math.floor(idealRed),
+            green: Math.floor(idealGreen),
+            blue: Math.floor(idealBlue),
         };
 
+        while (repartition.red + repartition.green + repartition.blue < totalNbSegments) {
+            const currentFrequencyRed = repartition.red / (repartition.red + repartition.green + repartition.blue);
+            const currentFrequencyGreen = repartition.green / (repartition.red + repartition.green + repartition.blue);
+            const currentFrequencyBlue = repartition.blue / (repartition.red + repartition.green + repartition.blue);
+
+            const gapRed = idealRed - currentFrequencyRed;
+            const gapGreen = idealGreen - currentFrequencyGreen;
+            const gapBlue = idealBlue - currentFrequencyBlue;
+
+            if (gapRed > gapGreen && gapRed > gapBlue) {
+                repartition.red++;
+            } else if (gapGreen > gapRed && gapGreen > gapBlue) {
+                repartition.green++;
+            } else {
+                repartition.blue++;
+            }
+        }
 
         return repartition;
     }
