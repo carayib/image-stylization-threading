@@ -1,17 +1,17 @@
-import { EColor } from "../plotter/compositing";
-import { IPeg } from "./thread-computer";
+import { EColor } from "../../plotter/compositing";
+import { IPeg } from "../thread-computer";
 
-import { IThreadToGrow, ThreadComputerSpecific, ThreadsIterator } from "./thread-computer-specific";
+import { IThreadToGrow, ThreadBase, ThreadsIterator } from "./thread-base";
 
-class ThreadComputerMonochrome extends ThreadComputerSpecific {
+class ThreadMonochrome extends ThreadBase {
     private threadPegs: IPeg[] = [];
 
     public get totalNbSegments(): number {
-        return ThreadComputerSpecific.computeNbSegments(this.threadPegs);
+        return ThreadBase.computeNbSegments(this.threadPegs);
     }
 
     public lowerNbSegments(targetNumber: number): void {
-        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegs, targetNumber);
+        ThreadBase.lowerNbSegmentsForThread(this.threadPegs, targetNumber);
     }
 
     public iterateOnThreads(callback: ThreadsIterator): void {
@@ -52,5 +52,4 @@ class ThreadComputerMonochrome extends ThreadComputerSpecific {
     }
 }
 
-export { ThreadComputerMonochrome };
-
+export { ThreadMonochrome };

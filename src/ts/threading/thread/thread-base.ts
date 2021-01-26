@@ -1,5 +1,5 @@
-import { EColor } from "../plotter/compositing";
-import { IPeg } from "./thread-computer";
+import { EColor } from "../../plotter/compositing";
+import { IPeg } from "../thread-computer";
 
 type ThreadsIterator = (thread: IPeg[], color: EColor) => unknown;
 
@@ -10,7 +10,7 @@ interface IThreadToGrow {
     color: EColor;
 }
 
-abstract class ThreadComputerSpecific {
+abstract class ThreadBase {
     public abstract get totalNbSegments(): number;
 
     public abstract lowerNbSegments(targetNumber: number): void;
@@ -43,6 +43,6 @@ abstract class ThreadComputerSpecific {
 
 export {
     IThreadToGrow,
-    ThreadComputerSpecific,
+    ThreadBase,
     ThreadsIterator,
 };

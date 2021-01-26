@@ -7,9 +7,9 @@ import { applyCanvasCompositing, EColor, ECompositingOperation, resetCanvasCompo
 
 import * as Statistics from "../statistics/statistics";
 
-import { ThreadComputerMonochrome } from "./thread-computer-monochrome";
-import { ThreadComputerRedBlueGreen } from "./thread-computer-red-green-blue";
-import { ThreadComputerSpecific } from "./thread-computer-specific";
+import { ThreadMonochrome } from "./thread/thread-monochrome";
+import { ThreadRedBlueGreen } from "./thread/thread-red-green-blue";
+import { ThreadBase } from "./thread/thread-base";
 
 const MIN_SAFE_NUMBER = -9007199254740991;
 const HIDDEN_CANVAS_SIZE = 256; // pixels
@@ -69,7 +69,7 @@ class ThreadComputer {
     private lineOpacityInternal: number;
     private lineThickness: number;
 
-    private child: ThreadComputerSpecific;
+    private child: ThreadBase;
 
     private arePegsTooClose: (peg1: IPeg, peg2: IPeg) => boolean;
 
@@ -164,9 +164,9 @@ class ThreadComputer {
         this.lineThickness = linethickness;
 
         if (Parameters.mode === EMode.MONOCHROME) {
-            this.child = new ThreadComputerMonochrome();
+            this.child = new ThreadMonochrome();
         } else {
-            this.child = new ThreadComputerRedBlueGreen();
+            this.child = new ThreadRedBlueGreen();
         }
         this.resetHiddenCanvas();
     }

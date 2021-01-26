@@ -1,7 +1,7 @@
-import { EColor } from "../plotter/compositing";
-import { IPeg } from "./thread-computer";
+import { EColor } from "../../plotter/compositing";
+import { IPeg } from "../thread-computer";
 
-import { IThreadToGrow, ThreadComputerSpecific, ThreadsIterator } from "./thread-computer-specific";
+import { IThreadToGrow, ThreadBase, ThreadsIterator } from "./thread-base";
 
 interface ISegmentsRepartition {
     red: number;
@@ -9,7 +9,7 @@ interface ISegmentsRepartition {
     blue: number;
 }
 
-class ThreadComputerRedBlueGreen extends ThreadComputerSpecific {
+class ThreadRedBlueGreen extends ThreadBase {
     private threadPegsRed: IPeg[] = [];
     private threadPegsGreen: IPeg[] = [];
     private threadPegsBlue: IPeg[] = [];
@@ -20,17 +20,17 @@ class ThreadComputerRedBlueGreen extends ThreadComputerSpecific {
     private frequencyBlue: number;
 
     public get totalNbSegments(): number {
-        return ThreadComputerSpecific.computeNbSegments(this.threadPegsRed) +
-            ThreadComputerSpecific.computeNbSegments(this.threadPegsGreen) +
-            ThreadComputerSpecific.computeNbSegments(this.threadPegsBlue);
+        return ThreadBase.computeNbSegments(this.threadPegsRed) +
+            ThreadBase.computeNbSegments(this.threadPegsGreen) +
+            ThreadBase.computeNbSegments(this.threadPegsBlue);
     }
 
     public lowerNbSegments(targetNumber: number): void {
         const repartition = this.computeIdealSegmentsRepartition(targetNumber);
 
-        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsRed, repartition.red);
-        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsGreen, repartition.green);
-        ThreadComputerSpecific.lowerNbSegmentsForThread(this.threadPegsBlue, repartition.blue);
+        ThreadBase.lowerNbSegmentsForThread(this.threadPegsRed, repartition.red);
+        ThreadBase.lowerNbSegmentsForThread(this.threadPegsGreen, repartition.green);
+        ThreadBase.lowerNbSegmentsForThread(this.threadPegsBlue, repartition.blue);
     }
 
     public iterateOnThreads(callback: ThreadsIterator): void {
@@ -142,4 +142,4 @@ class ThreadComputerRedBlueGreen extends ThreadComputerSpecific {
     }
 }
 
-export { ThreadComputerRedBlueGreen };
+export { ThreadRedBlueGreen };
