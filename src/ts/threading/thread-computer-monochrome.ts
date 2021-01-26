@@ -7,7 +7,7 @@ class ThreadComputerMonochrome extends ThreadComputerSpecific {
     private threadPegs: IPeg[] = [];
 
     public get totalNbSegments(): number {
-        return this.threadPegs.length > 1 ? this.threadPegs.length - 1 : 0;
+        return ThreadComputerSpecific.computeNbSegments(this.threadPegs);
     }
 
     public lowerNbSegments(targetNumber: number): void {

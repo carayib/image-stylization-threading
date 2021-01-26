@@ -35,6 +35,10 @@ abstract class ThreadComputerSpecific {
             thread.length = 0;
         }
     }
+
+    protected static computeNbSegments(thread: IPeg[]): number {
+        return (thread.length > 1) ? thread.length - 1 : 0;
+    }
 }
 
 export {

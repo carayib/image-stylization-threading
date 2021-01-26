@@ -20,8 +20,9 @@ class ThreadComputerRedBlueGreen extends ThreadComputerSpecific {
     private frequencyBlue: number;
 
     public get totalNbSegments(): number {
-        const totalNbPegs = this.threadPegsRed.length + this.threadPegsGreen.length + this.threadPegsBlue.length;
-        return totalNbPegs > 3 ? totalNbPegs - 3 : 0;
+        return ThreadComputerSpecific.computeNbSegments(this.threadPegsRed) +
+            ThreadComputerSpecific.computeNbSegments(this.threadPegsGreen) +
+            ThreadComputerSpecific.computeNbSegments(this.threadPegsBlue);
     }
 
     public lowerNbSegments(targetNumber: number): void {
