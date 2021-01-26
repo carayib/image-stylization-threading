@@ -82,9 +82,10 @@ class ThreadComputerRedBlueGreen extends ThreadComputerSpecific {
             data[4 * i + 2] = computeAdjustedValue(data[4 * i + 2]);
         }
 
-        this.frequencyRed = cumulatedRed / (cumulatedRed + cumulatedGreen + cumulatedBlue);
-        this.frequencyGreen = cumulatedGreen / (cumulatedRed + cumulatedGreen + cumulatedBlue);
-        this.frequencyBlue = cumulatedBlue / (cumulatedRed + cumulatedGreen + cumulatedBlue);
+        const totalColor = cumulatedRed + cumulatedGreen + cumulatedBlue;
+        this.frequencyRed = cumulatedRed / totalColor;
+        this.frequencyGreen = cumulatedGreen / totalColor;
+        this.frequencyBlue = cumulatedBlue / totalColor;
     }
 
     public enableSamplingFor(color: EColor): void {
