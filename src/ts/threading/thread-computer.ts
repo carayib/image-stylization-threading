@@ -11,7 +11,6 @@ import { ThreadBase } from "./thread/thread-base";
 
 const MIN_SAFE_NUMBER = -9007199254740991;
 const DEFAULT_CANVAS_SIZE_FOR_PEGS = 200;
-const HIDDEN_CANVAS_SIZE = 256; // pixels
 const TWO_PI = 2 * Math.PI;
 
 function clamp(x: number, min: number, max: number): number {
@@ -62,11 +61,13 @@ class ThreadComputer {
     private readonly hiddenCanvasContext: CanvasRenderingContext2D;
     private hiddenCanvasData: ImageData = null
 
+    private hiddenCanvasScale: number;
+
     private pegs: IPeg[];
 
-    private lineOpacity: number; // theorical
+    private lineOpacity: number; // in the final result
     private lineOpacityInternal: number;
-    private lineThickness: number;
+    private lineThickness: number; // abstract unit
 
     private child: ThreadBase;
 
@@ -83,7 +84,7 @@ class ThreadComputer {
 
     public drawThread(plotter: PlotterBase, nbSegmentsToIgnore: number): void {
         const transformation = this.computeTransformation(plotter.size);
-        const lineWidth = 1 * transformation.scaling * this.lineThickness;
+        const lineWidth = (transformation.scaling * this.hiddenCanvasScale) * this.lineThickness;
         const compositing = Parameters.invertColors ? ECompositingOperation.LIGHTEN : ECompositingOperation.DARKEN;
 
         this.child.iterateOnThreads(nbSegmentsToIgnore, (thread: IPeg[], color: EColor) => {
@@ -157,10 +158,10 @@ class ThreadComputer {
      * @returns true if at least one parameter changed
      */
     public reset(opacity: number, linethickness: number): void {
-        this.pegs = this.computePegs();
-
         this.lineOpacity = opacity;
         this.lineThickness = linethickness;
+
+        this.hiddenCanvasScale = Parameters.quality;
 
         if (Parameters.mode === EMode.MONOCHROME) {
             this.child = new ThreadMonochrome();
@@ -168,27 +169,30 @@ class ThreadComputer {
             this.child = new ThreadRedBlueGreen();
         }
         this.resetHiddenCanvas();
+
+        this.pegs = this.computePegs();
     }
 
     public updateIndicators(updateFunction: IndicatorUpdateFunction): void {
         updateFunction("pegs-count", this.pegs.length.toString());
         updateFunction("segments-count", this.nbSegments.toString());
-
     }
 
     public get nbSegments(): number {
         return this.child.totalNbSegments;
     }
 
-    private initializeHiddenCanvasCompositing(): void {
-        if (this.lineThickness <= 1) {
+    private initializeHiddenCanvasLineProperties(): void {
+        const theoricalThicknes = this.lineThickness * this.hiddenCanvasScale;
+
+        if (theoricalThicknes <= 1) {
             // do not go below a line width of 1 because it creates artifact.
             // instead, lower the lines opacity.
-            this.lineOpacityInternal = 0.5 * this.lineOpacity * this.lineThickness;
+            this.lineOpacityInternal = 0.5 * this.lineOpacity * theoricalThicknes;
             this.hiddenCanvasContext.lineWidth = 1;
         } else {
             this.lineOpacityInternal = 0.5 * this.lineOpacity;
-            this.hiddenCanvasContext.lineWidth = this.lineThickness;
+            this.hiddenCanvasContext.lineWidth = theoricalThicknes;
         }
     }
 
@@ -211,7 +215,7 @@ class ThreadComputer {
     }
 
     private resetHiddenCanvas(): void {
-        const wantedSize = ThreadComputer.computeBestSize(this.sourceImage, HIDDEN_CANVAS_SIZE);
+        const wantedSize = ThreadComputer.computeBestSize(this.sourceImage, 100 * this.hiddenCanvasScale);
         this.hiddenCanvas.width = wantedSize.width;
         this.hiddenCanvas.height = wantedSize.height;
 
@@ -223,7 +227,7 @@ class ThreadComputer {
         this.child.adjustCanvasData(imageData.data, Parameters.invertColors);
         this.hiddenCanvasContext.putImageData(imageData, 0, 0);
 
-        this.initializeHiddenCanvasCompositing();
+        this.initializeHiddenCanvasLineProperties();
     }
 
     private computeTransformation(targetSize: ISize): Transformation {
@@ -377,6 +381,7 @@ class ThreadComputer {
 
             const maxX = domainSize.width;
             const maxY = domainSize.height;
+
             // corners
             pegs.push({ x: 0, y: 0 });
             pegs.push({ x: maxX, y: 0 });

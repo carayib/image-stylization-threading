@@ -80,8 +80,31 @@ const data = {
             ]
         },
         {
-            title: "Thread",
+            title: "Parameters",
             controls: [
+                {
+                    type: Demopage.supportedControls.Tabs,
+                    title: "Quality",
+                    id: "quality-tabs-id",
+                    unique: true,
+                    options: [
+                        {
+                            label: "Low",
+                            value: "1",
+                            checked: true,
+                        },
+                        {
+                            label: "Medium",
+                            value: "2",
+                            checked: false,
+                        },
+                        {
+                            label: "High",
+                            value: "3",
+                            checked: false,
+                        },
+                    ]
+                },
                 {
                     type: Demopage.supportedControls.Tabs,
                     title: "Mode",

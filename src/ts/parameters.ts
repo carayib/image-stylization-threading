@@ -7,6 +7,7 @@ const controlId = {
     SHAPE: "shape-tabs-id",
     NB_PEGS: "pegs-range-id",
     NB_LINES: "lines-range-id",
+    QUALITY: "quality-tabs-id",
     MODE: "thread-mode-tabs-id",
     LINES_OPACITY: "opacity-range-id",
     LINES_THICKNESS: "thickness-range-id",
@@ -45,6 +46,7 @@ function triggerReset(): void {
 Page.Tabs.addObserver(controlId.SHAPE, triggerReset);
 Page.Range.addLazyObserver(controlId.NB_PEGS, triggerReset);
 Page.Range.addObserver(controlId.NB_LINES, triggerRedraw);
+Page.Tabs.addObserver(controlId.QUALITY, triggerReset);
 Page.Tabs.addObserver(controlId.MODE, triggerReset);
 Page.Range.addLazyObserver(controlId.LINES_OPACITY, triggerReset);
 Page.Range.addLazyObserver(controlId.LINES_THICKNESS, triggerReset);
@@ -89,6 +91,10 @@ abstract class Parameters {
 
     public static get pegsSpacing(): number {
         return 11 - Page.Range.getValue(controlId.NB_PEGS);
+    }
+
+    public static get quality(): number {
+        return +Page.Tabs.getValues(controlId.QUALITY)[0];
     }
 
     public static get mode(): EMode {
