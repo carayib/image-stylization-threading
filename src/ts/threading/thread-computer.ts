@@ -10,6 +10,7 @@ import { ThreadRedBlueGreen } from "./thread/thread-red-green-blue";
 import { ThreadBase } from "./thread/thread-base";
 
 const MIN_SAFE_NUMBER = -9007199254740991;
+const DEFAULT_CANVAS_SIZE_FOR_PEGS = 200;
 const HIDDEN_CANVAS_SIZE = 256; // pixels
 const TWO_PI = 2 * Math.PI;
 
@@ -354,11 +355,20 @@ class ThreadComputer {
     }
 
     private computePegs(): IPeg[] {
-        const domainSize: ISize = this.hiddenCanvas;
-        const pegs: IPeg[] = [];
-
+        /* First, compute pegs for a fixed-size canvas*/
+        let domainSize: ISize;
+        {
+            const aspectRatio = this.hiddenCanvas.width / this.hiddenCanvas.height;
+            if (aspectRatio > 1) {
+                domainSize = { width: DEFAULT_CANVAS_SIZE_FOR_PEGS, height: Math.round(DEFAULT_CANVAS_SIZE_FOR_PEGS / aspectRatio) };
+            } else {
+                domainSize = { width: Math.round(DEFAULT_CANVAS_SIZE_FOR_PEGS * aspectRatio), height: DEFAULT_CANVAS_SIZE_FOR_PEGS };
+            }
+        }
         const pegsShape = Parameters.shape;
         const pegsSpacing = Parameters.pegsSpacing;
+
+        const pegs: IPeg[] = [];
 
         if (pegsShape === EShape.RECTANGLE) {
             this.arePegsTooClose = (peg1: IPeg, peg2: IPeg) => {
@@ -410,6 +420,12 @@ class ThreadComputer {
                 }
                 pegs.push(peg);
             }
+        }
+
+        /* Then adjust the pegs to the actual canvas size */
+        for (const peg of pegs) {
+            peg.x *= this.hiddenCanvas.width / domainSize.width;
+            peg.y *= this.hiddenCanvas.height / domainSize.height;
         }
 
         return pegs;
