@@ -74,7 +74,7 @@ class PlotterCanvas2D extends PlotterBase {
 
             for (const point of points) {
                 this.context.beginPath();
-                this.context.arc(point.x, point.y, 0.5 * diameter, 0, 2 * Math.PI);
+                this.context.arc(point.x * this.cssPixel, point.y * this.cssPixel, 0.5 * diameter * this.cssPixel, 0, 2 * Math.PI);
                 this.context.fill();
                 this.context.closePath();
             }
