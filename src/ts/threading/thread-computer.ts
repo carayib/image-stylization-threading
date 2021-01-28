@@ -68,7 +68,7 @@ class ThreadComputer {
     private lineOpacityInternal: number;
     private lineThickness: number; // abstract unit
 
-    private child: ThreadBase;
+    private thread: ThreadBase;
 
     private arePegsTooClose: (peg1: IPeg, peg2: IPeg) => boolean;
 
@@ -86,7 +86,7 @@ class ThreadComputer {
         const lineWidth = (transformation.scaling * this.hiddenCanvasScale) * this.lineThickness;
         const compositing = Parameters.invertColors ? ECompositingOperation.LIGHTEN : ECompositingOperation.DARKEN;
 
-        this.child.iterateOnThreads(nbSegmentsToIgnore, (thread: IPeg[], color: EColor) => {
+        this.thread.iterateOnThreads(nbSegmentsToIgnore, (thread: IPeg[], color: EColor) => {
             const points: IPoint[] = [];
             for (const peg of thread) {
                 points.push(transformation.transform(peg));
@@ -122,11 +122,11 @@ class ThreadComputer {
             return false;
         } else if (this.nbSegments > targetNbSegments) {
             // we drew too many lines already, removes the excess
-            this.child.lowerNbSegments(targetNbSegments);
+            this.thread.lowerNbSegments(targetNbSegments);
 
             // redraw the hidden canvas from scratch
             this.resetHiddenCanvas();
-            this.child.iterateOnThreads(0, (thread: IPeg[], color: EColor) => {
+            this.thread.iterateOnThreads(0, (thread: IPeg[], color: EColor) => {
                 applyCanvasCompositing(this.hiddenCanvasContext, color, this.lineOpacityInternal, ECompositingOperation.LIGHTEN);
 
                 for (let iPeg = 0; iPeg + 1 < thread.length; iPeg++) {
@@ -139,11 +139,11 @@ class ThreadComputer {
 
         let lastColor: EColor = null;
         while (this.nbSegments < targetNbSegments && performance.now() - start < maxMillisecondsTaken) {
-            const threadToGrow = this.child.getThreadToGrow();
+            const threadToGrow = this.thread.getThreadToGrow();
 
             if (lastColor !== threadToGrow.color) {
                 applyCanvasCompositing(this.hiddenCanvasContext, threadToGrow.color, this.lineOpacityInternal, ECompositingOperation.LIGHTEN);
-                this.child.enableSamplingFor(threadToGrow.color);
+                this.thread.enableSamplingFor(threadToGrow.color);
                 lastColor = threadToGrow.color;
             }
             this.computeSegment(threadToGrow.thread);
@@ -163,9 +163,9 @@ class ThreadComputer {
         this.hiddenCanvasScale = Parameters.quality;
 
         if (Parameters.mode === EMode.MONOCHROME) {
-            this.child = new ThreadMonochrome();
+            this.thread = new ThreadMonochrome();
         } else {
-            this.child = new ThreadRedBlueGreen();
+            this.thread = new ThreadRedBlueGreen();
         }
         this.resetHiddenCanvas();
 
@@ -178,7 +178,7 @@ class ThreadComputer {
     }
 
     public get nbSegments(): number {
-        return this.child.totalNbSegments;
+        return this.thread.totalNbSegments;
     }
 
     private initializeHiddenCanvasLineProperties(): void {
@@ -223,7 +223,7 @@ class ThreadComputer {
 
         // change the base level so that pure white becomes medium grey
         const imageData = this.hiddenCanvasContext.getImageData(0, 0, wantedSize.width, wantedSize.height);
-        this.child.adjustCanvasData(imageData.data, Parameters.invertColors);
+        this.thread.adjustCanvasData(imageData.data, Parameters.invertColors);
         this.hiddenCanvasContext.putImageData(imageData, 0, 0);
 
         this.initializeHiddenCanvasLineProperties();
@@ -345,7 +345,7 @@ class ThreadComputer {
 
     private sampleCanvasPixel(pixelX: number, pixelY: number): number {
         const index = 4 * (pixelX + pixelY * this.hiddenCanvasData.width);
-        return this.child.sampleCanvas(this.hiddenCanvasData.data, index);
+        return this.thread.sampleCanvas(this.hiddenCanvasData.data, index);
     }
 
     private static computeBestSize(sourceImageSize: ISize, maxSize: number): ISize {
