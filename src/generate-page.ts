@@ -143,7 +143,7 @@ const data = {
                     id: "lines-range-id",
                     min: 500,
                     max: 15000,
-                    value: 3000,
+                    value: 2500,
                     step: 500
                 },
                 {
@@ -159,9 +159,9 @@ const data = {
                     type: Demopage.supportedControls.Range,
                     title: "Thickness",
                     id: "thickness-range-id",
-                    min: 0.5,
+                    min: 0.25,
                     max: 1,
-                    value: 1,
+                    value: 0.5,
                     step: 0.25
                 },
             ]
