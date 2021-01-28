@@ -361,7 +361,7 @@ class ThreadComputer {
             };
 
             const imageValue = this.sampleCanvasData(sample);
-            const finalValue = imageValue + (0.5 * this.lineOpacity * 255);
+            const finalValue = imageValue + (this.lineOpacityInternal * 255);
             const contribution = 127 - finalValue;
             squaredError += contribution;
         }
