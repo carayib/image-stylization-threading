@@ -105,7 +105,7 @@ class ThreadComputer {
 
     public drawPegs(plotter: PlotterBase): void {
         const transformation = this.computeTransformation(plotter.size);
-        const pointSize = 3 * transformation.scaling;
+        const pointSize = 0.5 * (transformation.scaling * this.hiddenCanvasScale);
 
         const points: IPoint[] = [];
         for (const peg of this.pegs) {
