@@ -173,7 +173,7 @@ const data = {
                     type: Demopage.supportedControls.Checkbox,
                     title: "Pegs",
                     id: "display-pegs-checkbox-id",
-                    checked: false
+                    checked: true
                 },
                 {
                     type: Demopage.supportedControls.Checkbox,
