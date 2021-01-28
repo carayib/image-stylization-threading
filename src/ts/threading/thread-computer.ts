@@ -349,7 +349,7 @@ class ThreadComputer {
     private computeSegmentPotential(peg1: IPeg, peg2: IPeg): number {
         this.uploadCanvasDataToCPU();
 
-        let squaredError = 0;
+        let potential = 0;
 
         const segmentLength = distance(peg1, peg2);
         const nbSamples = Math.ceil(segmentLength);
@@ -363,10 +363,10 @@ class ThreadComputer {
             const imageValue = this.sampleCanvasData(sample);
             const finalValue = imageValue + (this.lineOpacityInternal * 255);
             const contribution = 127 - finalValue;
-            squaredError += contribution;
+            potential += contribution;
         }
 
-        return squaredError / nbSamples;
+        return potential / nbSamples;
     }
 
     /** Linear interpolation. Returns a result in [0, 255] */
