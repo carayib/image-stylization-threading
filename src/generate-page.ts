@@ -25,10 +25,6 @@ const data = {
             id: "segments-count",
             label: "Segments count"
         },
-        {
-            id: "thread-length",
-            label: "Thread length"
-        },
     ],
     canvas: {
         width: 512,
