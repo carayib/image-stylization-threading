@@ -56,7 +56,7 @@ function applyCanvasCompositing(context: CanvasRenderingContext2D, color: EColor
     // basic compositing
     {
         resetCanvasCompositing(context);
-        const value = (supportsAdvancedCompositing) ? 255 : 0;
+        const value = (operation === ECompositingOperation.LIGHTEN) ? 255 : 0;
         const rawRGB = computeRawColor(color);
         context.strokeStyle = `rgba(${rawRGB.r * value}, ${rawRGB.g * value}, ${rawRGB.b * value}, ${opacity})`;
     }
