@@ -82,7 +82,7 @@ const data = {
                     id: "pegs-range-id",
                     min: 0.1,
                     max: 1,
-                    value: 0.7,
+                    value: 0.6,
                     step: 0.05
                 },
             ]
@@ -132,6 +132,12 @@ const data = {
                     ]
                 },
                 {
+                    type: Demopage.supportedControls.Checkbox,
+                    title: "Dark mode",
+                    id: "invert-colors-checkbox-id",
+                    checked: false
+                },
+                {
                     type: Demopage.supportedControls.Range,
                     title: "Segments count",
                     id: "lines-range-id",
@@ -157,12 +163,6 @@ const data = {
                     max: 1,
                     value: 1,
                     step: 0.25
-                },
-                {
-                    type: Demopage.supportedControls.Checkbox,
-                    title: "Dark mode",
-                    id: "invert-colors-checkbox-id",
-                    checked: false
                 },
             ]
         },
