@@ -10,7 +10,6 @@ import { ThreadRedBlueGreen } from "./thread/thread-red-green-blue";
 import { ThreadBase } from "./thread/thread-base";
 
 const MIN_SAFE_NUMBER = -9007199254740991;
-const DEFAULT_CANVAS_SIZE_FOR_PEGS = 200;
 const TWO_PI = 2 * Math.PI;
 
 function clamp(x: number, min: number, max: number): number {
@@ -362,6 +361,7 @@ class ThreadComputer {
         /* First, compute pegs for a fixed-size canvas*/
         let domainSize: ISize;
         {
+            const DEFAULT_CANVAS_SIZE_FOR_PEGS = 1000;
             const aspectRatio = this.hiddenCanvas.width / this.hiddenCanvas.height;
             if (aspectRatio > 1) {
                 domainSize = { width: DEFAULT_CANVAS_SIZE_FOR_PEGS, height: Math.round(DEFAULT_CANVAS_SIZE_FOR_PEGS / aspectRatio) };
