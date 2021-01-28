@@ -56,6 +56,10 @@ Page.Canvas.Observers.canvasResize.push(triggerRedraw);
 
 const isInDebug = Helpers.getQueryStringValue("debug") === "1";
 
+Page.Canvas.setIndicatorVisibility("error-average", isInDebug);
+Page.Canvas.setIndicatorVisibility("error-mean-square", isInDebug);
+Page.Canvas.setIndicatorVisibility("error-variance", isInDebug);
+
 function updateIndicatorsVisibility(): void {
     const shouldBeVisible = Page.Checkbox.isChecked(controlId.SHOW_INDICATORS);
     Page.Canvas.setIndicatorsVisibility(shouldBeVisible);

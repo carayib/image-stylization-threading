@@ -49,6 +49,12 @@ interface ISegment {
     peg2: IPeg;
 }
 
+interface IErrorMeasure {
+    average: number;
+    variance: number;
+    meanSquare: number;
+}
+
 type IndicatorUpdateFunction = (indicatorId: string, indicatorValue: string) => unknown;
 
 /**
@@ -59,8 +65,9 @@ class ThreadComputer {
     private readonly hiddenCanvas: HTMLCanvasElement;
     private readonly hiddenCanvasContext: CanvasRenderingContext2D;
     private hiddenCanvasData: ImageData = null
-
     private hiddenCanvasScale: number;
+
+    private error: IErrorMeasure;
 
     private pegs: IPeg[];
 
@@ -134,6 +141,7 @@ class ThreadComputer {
                 }
             });
 
+            this.computeError();
             return true;
         }
 
@@ -147,6 +155,10 @@ class ThreadComputer {
                 lastColor = threadToGrow.color;
             }
             this.computeSegment(threadToGrow.thread);
+
+            if (this.nbSegments % 100 === 0) {
+                this.computeError();
+            }
         }
 
         return true;
@@ -175,6 +187,9 @@ class ThreadComputer {
     public updateIndicators(updateFunction: IndicatorUpdateFunction): void {
         updateFunction("pegs-count", this.pegs.length.toString());
         updateFunction("segments-count", this.nbSegments.toString());
+        updateFunction("error-average", this.error.average.toString());
+        updateFunction("error-mean-square", this.error.meanSquare.toString());
+        updateFunction("error-variance", this.error.variance.toString());
     }
 
     public get nbSegments(): number {
@@ -225,8 +240,42 @@ class ThreadComputer {
         const imageData = this.hiddenCanvasContext.getImageData(0, 0, wantedSize.width, wantedSize.height);
         this.thread.adjustCanvasData(imageData.data, Parameters.invertColors);
         this.hiddenCanvasContext.putImageData(imageData, 0, 0);
+        this.computeError();
 
         this.initializeHiddenCanvasLineProperties();
+    }
+
+    private computeError(): void {
+        this.uploadCanvasDataToCPU();
+
+        this.error = {
+            average: 0,
+            variance: 0,
+            meanSquare: 0,
+        };
+
+        const nbPixels = this.hiddenCanvasData.width * this.hiddenCanvasData.height;
+        const nbSamples = 3 * nbPixels;
+        for (let iP = 0; iP < nbPixels; iP++) {
+            const errorRed = 127 - this.hiddenCanvasData.data[4 * iP + 0];
+            const errorGreen = 127 - this.hiddenCanvasData.data[4 * iP + 1];
+            const errorBlue = 127 - this.hiddenCanvasData.data[4 * iP + 2];
+
+            this.error.average += errorRed + errorGreen + errorBlue;
+            this.error.meanSquare += (errorRed * errorRed) + (errorGreen * errorGreen) + (errorBlue * errorBlue);
+        }
+        this.error.average = Math.round(this.error.average / nbSamples);
+        this.error.meanSquare = Math.round(this.error.meanSquare / nbSamples);
+
+        for (let iP = 0; iP < nbPixels; iP++) {
+            const errorRed = 127 - this.hiddenCanvasData.data[4 * iP + 0];
+            const errorGreen = 127 - this.hiddenCanvasData.data[4 * iP + 1];
+            const errorBlue = 127 - this.hiddenCanvasData.data[4 * iP + 2];
+            const error = (errorRed + errorGreen + errorBlue) / 3;
+            const distancetoError = error - this.error.average;
+            this.error.variance += distancetoError * distancetoError;
+        }
+        this.error.variance = Math.round(this.error.variance / nbSamples);
     }
 
     private computeTransformation(targetSize: ISize): Transformation {

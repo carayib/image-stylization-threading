@@ -25,6 +25,18 @@ const data = {
             id: "segments-count",
             label: "Segments count"
         },
+        {
+            id: "error-average",
+            label: "Error (average)"
+        },
+        {
+            id: "error-mean-square",
+            label: "Error (mean square)"
+        },
+        {
+            id: "error-variance",
+            label: "Error (variance)"
+        }
     ],
     canvas: {
         width: 512,
