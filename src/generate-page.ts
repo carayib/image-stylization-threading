@@ -136,7 +136,7 @@ const data = {
                     title: "Segments count",
                     id: "lines-range-id",
                     min: 500,
-                    max: 10000,
+                    max: 15000,
                     value: 3000,
                     step: 500
                 },
