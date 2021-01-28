@@ -419,7 +419,7 @@ class ThreadComputer {
             }
         }
         const pegsShape = Parameters.shape;
-        const pegsSpacing = Parameters.pegsSpacing;
+        const pegsSpacing = 20 * Parameters.pegsSpacing;
 
         const pegs: IPeg[] = [];
 

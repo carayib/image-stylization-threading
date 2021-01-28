@@ -80,10 +80,10 @@ const data = {
                     type: Demopage.supportedControls.Range,
                     title: "Pegs density",
                     id: "pegs-range-id",
-                    min: 1,
-                    max: 10,
-                    value: 10,
-                    step: 0.5
+                    min: 0.1,
+                    max: 1,
+                    value: 0.7,
+                    step: 0.05
                 },
             ]
         },
