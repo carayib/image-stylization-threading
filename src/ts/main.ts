@@ -23,31 +23,28 @@ function main(): void {
 
     let indicatorsNeedUpdate = true;
     function mainLoop(): void {
-        if (threadComputer !== null && threadPlotter !== null) {
-            if (needToReset) {
-                threadComputer.reset(Parameters.linesOpacity, Parameters.linesThickness);
-                threadPlotter.reset()
-                needToReset = false;
-            }
+        if (needToReset) {
+            threadComputer.reset(Parameters.linesOpacity, Parameters.linesThickness);
+            threadPlotter.reset()
+            needToReset = false;
+        }
 
-            const computedSomething = threadComputer.computeNextSegments(MAX_COMPUTING_TIME_PER_FRAME);
+        const computedSomething = threadComputer.computeNextSegments(MAX_COMPUTING_TIME_PER_FRAME);
 
-            indicatorsNeedUpdate = indicatorsNeedUpdate || computedSomething;
-            if (indicatorsNeedUpdate && Parameters.showIndicators) {
-                threadComputer.updateIndicators(Page.Canvas.setIndicatorText);
-                indicatorsNeedUpdate = false;
-            }
+        indicatorsNeedUpdate = indicatorsNeedUpdate || computedSomething;
+        if (indicatorsNeedUpdate && Parameters.showIndicators) {
+            threadComputer.updateIndicators(Page.Canvas.setIndicatorText);
+            indicatorsNeedUpdate = false;
+        }
 
-            threadPlotter.plot();
+        threadPlotter.plot();
 
-            if (Parameters.debug) {
-                threadComputer.drawDebugView(canvasPlotter.context);
-            }
+        if (Parameters.debug) {
+            threadComputer.drawDebugView(canvasPlotter.context);
         }
 
         requestAnimationFrame(mainLoop);
     }
-    requestAnimationFrame(mainLoop);
 
     function updateBlur(blur: number): void {
         canvasPlotter.blur = blur;
@@ -67,6 +64,7 @@ function main(): void {
     const defaultImage = new Image();
     defaultImage.addEventListener("load", () => {
         onNewImage(defaultImage);
+        requestAnimationFrame(mainLoop);
     });
     defaultImage.src = "./resources/cat.jpg";
 
