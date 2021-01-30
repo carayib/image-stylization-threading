@@ -10,9 +10,8 @@ import { ThreadPlotter } from "./threading/thread-plotter";
 
 import "./page-interface-generated";
 
-const MAX_COMPUTING_TIME_PER_FRAME = 20; // ms
-
 function main(): void {
+    const MAX_COMPUTING_TIME_PER_FRAME = 20; // ms
     const canvasPlotter = new PlotterCanvas2D();
     let threadPlotter: ThreadPlotter = null;
     let threadComputer: ThreadComputer = null;
