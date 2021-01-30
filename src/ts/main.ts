@@ -10,6 +10,8 @@ import { ThreadComputer } from "./threading/thread-computer";
 
 import "./page-interface-generated";
 
+const MAX_COMPUTING_TIME_PER_FRAME = 20; // ms
+
 function plot(threadComputer: ThreadComputer, plotter: PlotterBase, nbSegmentsToIgnore: number): void {
     if (nbSegmentsToIgnore >= threadComputer.nbSegments) {
         return;
@@ -54,7 +56,7 @@ function main(): void {
                 nbSegmentsToIgnore = 0;
             }
 
-            const computedSomething = threadComputer.computeNextSegments(20);
+            const computedSomething = threadComputer.computeNextSegments(MAX_COMPUTING_TIME_PER_FRAME);
 
             indicatorsNeedUpdate = indicatorsNeedUpdate || computedSomething;
             if (indicatorsNeedUpdate && Parameters.showIndicators) {
