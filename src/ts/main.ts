@@ -64,6 +64,10 @@ function main(): void {
                 indicatorsNeedUpdate = false;
             }
 
+            if (nbSegmentsToIgnore >  threadComputer.nbSegments) {
+                // if the nb of segment went down, no other choice that redrawing all from scratch
+                nbSegmentsToIgnore = 0;
+            }
             plot(threadComputer, canvasPlotter, nbSegmentsToIgnore);
             nbSegmentsToIgnore = threadComputer.nbSegments;
 

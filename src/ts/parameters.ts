@@ -45,7 +45,6 @@ function triggerReset(): void {
 
 Page.Tabs.addObserver(controlId.SHAPE, triggerReset);
 Page.Range.addLazyObserver(controlId.PEGS_DENSITY, triggerReset);
-Page.Range.addObserver(controlId.NB_LINES, triggerRedraw);
 Page.Tabs.addObserver(controlId.QUALITY, triggerReset);
 Page.Tabs.addObserver(controlId.MODE, triggerReset);
 Page.Range.addLazyObserver(controlId.LINES_OPACITY, triggerReset);
