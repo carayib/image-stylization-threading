@@ -21,7 +21,6 @@ function main(): void {
     Parameters.addRedrawObserver(() => { threadPlotter?.reset(); });
     Parameters.addResetObserver(() => { needToReset = true; });
 
-    let indicatorsNeedUpdate = true;
     function mainLoop(): void {
         if (needToReset) {
             threadComputer.reset(Parameters.linesOpacity, Parameters.linesThickness);
@@ -31,10 +30,8 @@ function main(): void {
 
         const computedSomething = threadComputer.computeNextSegments(MAX_COMPUTING_TIME_PER_FRAME);
 
-        indicatorsNeedUpdate = indicatorsNeedUpdate || computedSomething;
-        if (indicatorsNeedUpdate && Parameters.showIndicators) {
+        if (computedSomething && Parameters.showIndicators) {
             threadComputer.updateIndicators(Page.Canvas.setIndicatorText);
-            indicatorsNeedUpdate = false;
         }
 
         threadPlotter.plot();
