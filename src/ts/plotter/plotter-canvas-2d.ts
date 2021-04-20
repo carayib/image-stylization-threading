@@ -1,10 +1,10 @@
-import { PlotterBase, IPlotterInfo } from "./plotter-base";
+import { ILine } from "../interfaces/i-line";
 import { IPoint } from "../interfaces/i-point";
 import { ISize } from "../interfaces/i-size";
+import { applyCanvasCompositing, EColor, ECompositingOperation, resetCanvasCompositing } from "./compositing";
+import { IPlotterInfo, PlotterBase } from "./plotter-base";
 
 import "../page-interface-generated";
-import { ILine } from "../interfaces/i-line";
-import { applyCanvasCompositing, EColor, ECompositingOperation, resetCanvasCompositing } from "./compositing";
 
 class PlotterCanvas2D extends PlotterBase {
     private readonly canvas: HTMLCanvasElement;
@@ -89,4 +89,5 @@ class PlotterCanvas2D extends PlotterBase {
     }
 }
 
-export { PlotterCanvas2D }
+export { PlotterCanvas2D };
+
