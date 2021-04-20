@@ -41,12 +41,13 @@ function computeRawColor(color: EColor): IColor {
  * @param opacity in [0, 1]
  */
 function applyCanvasCompositing(context: CanvasRenderingContext2D, color: EColor, opacity: number, operation: ECompositingOperation): void {
+    const rawRGB = computeRawColor(color);
+
     if (supportsAdvancedCompositing) {
         const targetOperation = (operation === ECompositingOperation.LIGHTEN) ? "lighter" : "difference";
         context.globalCompositeOperation = targetOperation;
         if (context.globalCompositeOperation === targetOperation) {
             const value = Math.ceil(255 * opacity);
-            const rawRGB = computeRawColor(color);
             context.strokeStyle = `rgb(${rawRGB.r * value}, ${rawRGB.g * value}, ${rawRGB.b * value})`;
             return; // success
         } else {
@@ -59,7 +60,6 @@ function applyCanvasCompositing(context: CanvasRenderingContext2D, color: EColor
     {
         resetCanvasCompositing(context);
         const value = (operation === ECompositingOperation.LIGHTEN) ? 255 : 0;
-        const rawRGB = computeRawColor(color);
         context.strokeStyle = `rgba(${rawRGB.r * value}, ${rawRGB.g * value}, ${rawRGB.b * value}, ${opacity})`;
     }
 }
