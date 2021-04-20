@@ -221,7 +221,9 @@ class ThreadComputer {
             nextPeg = startingSegment.peg2;
         } else {
             lastPeg = thread[thread.length - 1];
-            nextPeg = this.computeBestNextPeg(lastPeg);
+            const HISTORY_SIZE = Math.min(thread.length, 20);
+            const prevousPegs = thread.slice(-HISTORY_SIZE);
+            nextPeg = this.computeBestNextPeg(lastPeg, prevousPegs);
         }
 
         thread.push(nextPeg);
@@ -318,12 +320,12 @@ class ThreadComputer {
         return randomItem(candidates);
     }
 
-    private computeBestNextPeg(currentPeg: IPeg): IPeg {
+    private computeBestNextPeg(currentPeg: IPeg, pegsToAvoid: IPeg[]): IPeg {
         let candidates: IPeg[] = [];
         let bestScore = MIN_SAFE_NUMBER;
 
         for (const peg of this.pegs) {
-            if (!this.arePegsTooClose(currentPeg, peg)) {
+            if (!this.arePegsTooClose(currentPeg, peg) && !pegsToAvoid.includes(peg)) {
                 const candidateScore = this.computeSegmentPotential(currentPeg, peg);
                 if (candidateScore > bestScore) {
                     bestScore = candidateScore;
