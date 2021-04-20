@@ -1,3 +1,5 @@
+import "../page-interface-generated";
+
 enum ECompositingOperation {
     DARKEN,
     LIGHTEN,
