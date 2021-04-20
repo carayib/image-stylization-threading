@@ -74,4 +74,5 @@ function main(): void {
     });
 }
 
+Helpers.declarePolyfills();
 main();

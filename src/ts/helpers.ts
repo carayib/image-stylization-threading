@@ -46,7 +46,43 @@ function getQueryStringValue(name: string): string | null {
     return null;
 }
 
+function declareArrayIncludesPolyfill(): void {
+    if (typeof Array.prototype.includes !== "function") {
+        console.log("Declaring Array.includes polyfill...");
+        Object.defineProperty(Array.prototype, "includes", {
+            value<T>(this: T[], element: any): boolean {
+                return this.indexOf(element) >= 0;
+            }
+        });
+    }
+}
+
+function declareStringRepeatPolyfill(): void {
+    if (typeof String.prototype.repeat !== "function") {
+        console.log("Declaring String.repeat polyfill...");
+        Object.defineProperty(String.prototype, "repeat", {
+            value(this: string, count: number): string {
+                if (count < 0 || count === Infinity) {
+                    throw new RangeError();
+                }
+
+                let result = "";
+                for (let i = 0; i < count; i++) {
+                    result += this;
+                }
+                return result;
+            }
+        });
+    }
+}
+
+function declarePolyfills(): void {
+    declareArrayIncludesPolyfill();
+    declareStringRepeatPolyfill();
+}
+
 export {
+    declarePolyfills,
     downloadTextFile,
     getQueryStringValue,
 };
