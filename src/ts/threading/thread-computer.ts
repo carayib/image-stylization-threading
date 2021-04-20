@@ -433,25 +433,31 @@ class ThreadComputer {
             const maxX = domainSize.width;
             const maxY = domainSize.height;
 
-            // corners
-            pegs.push({ x: 0, y: 0 });
-            pegs.push({ x: maxX, y: 0 });
-            pegs.push({ x: maxX, y: maxY });
-            pegs.push({ x: 0, y: maxY });
+            const nbPegsPerWidth = Math.ceil(maxX / pegsSpacing);
+            const nbPegsPerHeight = Math.ceil(maxY / pegsSpacing);
 
-            // sides
-            const nbPegsPerWidth = Math.ceil(domainSize.width / pegsSpacing);
+            pegs.push({ x: 0, y: 0 });
+
             for (let iW = 1; iW < nbPegsPerWidth; iW++) {
-                const x = maxX * (iW / nbPegsPerWidth);
-                pegs.push({ x, y: 0 });
-                pegs.push({ x, y: maxY });
+                pegs.push({ x: maxX * (iW / nbPegsPerWidth), y: 0 });
             }
 
-            const nbPegsPerHeight = Math.ceil(domainSize.height / pegsSpacing);
+            pegs.push({ x: maxX, y: 0 });
+
             for (let iH = 1; iH < nbPegsPerHeight; iH++) {
-                const y = maxY * (iH / nbPegsPerHeight);
-                pegs.push({ x: 0, y });
-                pegs.push({ x: maxX, y });
+                pegs.push({ x: maxX, y: maxY * (iH / nbPegsPerHeight) });
+            }
+
+            pegs.push({ x: maxX, y: maxY });
+
+            for (let iW = nbPegsPerWidth - 1; iW >= 1; iW--) {
+                pegs.push({ x: maxX * (iW / nbPegsPerWidth), y: maxY });
+            }
+
+            pegs.push({ x: 0, y: maxY });
+
+            for (let iH = nbPegsPerHeight - 1; iH >= 1; iH--) {
+                pegs.push({ x: 0, y: maxY * (iH / nbPegsPerHeight) });
             }
         } else {
             interface IPegCircle extends IPeg {
