@@ -200,6 +200,12 @@ const data = {
                     id: "result-download-id",
                     label: "Download as SVG",
                     flat: true
+                },
+                {
+                    type: Demopage.supportedControls.FileDownload,
+                    id: "instructions-download-id",
+                    label: "Download instructions (beta)",
+                    flat: true
                 }
             ]
         }

@@ -72,6 +72,12 @@ function main(): void {
         const filename = "image-as-threading.svg";
         Helpers.downloadTextFile(svgString, filename);
     });
+
+    Parameters.addDownloadInstructionsObserver(() => {
+        const text = threadComputer.instructions;
+        const filename = "image-as-threading_instructions.txt";
+        Helpers.downloadTextFile(text, filename);
+    });
 }
 
 Helpers.declarePolyfills();

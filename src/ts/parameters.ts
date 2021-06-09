@@ -16,6 +16,7 @@ const controlId = {
     SHOW_INDICATORS: "show-indicators-checkbox-id",
     BLUR: "blur-range-id",
     DOWNLOAD: "result-download-id",
+    DOWNLOAD_INSTRUCTIONS: "instructions-download-id",
 };
 
 enum EShape {
@@ -147,7 +148,20 @@ abstract class Parameters {
     public static addDownloadObserver(callback: () => unknown): void {
         Page.FileControl.addDownloadObserver(controlId.DOWNLOAD, callback);
     }
+
+    public static addDownloadInstructionsObserver(callback: () => unknown): void {
+        Page.FileControl.addDownloadObserver(controlId.DOWNLOAD_INSTRUCTIONS, callback);
+    }
 }
+
+function updateDownloadInstructionsVisibility(): void {
+    const isMonochrome = (Parameters.mode === EMode.MONOCHROME);
+    const isBlackOnWhite = !Parameters.invertColors;
+    Page.Controls.setVisibility(controlId.DOWNLOAD_INSTRUCTIONS, isMonochrome && isBlackOnWhite);
+}
+Page.Tabs.addObserver(controlId.MODE, updateDownloadInstructionsVisibility);
+Page.Checkbox.addObserver(controlId.INVERT_COLORS, updateDownloadInstructionsVisibility);
+updateDownloadInstructionsVisibility();
 
 export {
     Parameters,
