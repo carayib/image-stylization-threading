@@ -474,7 +474,7 @@ class ThreadComputer {
             }
         }
         const pegsShape = Parameters.shape;
-        const pegsSpacing = 20 * Parameters.pegsSpacing;
+        const pegsCount = Parameters.pegsCount;
 
         const pegs: IPeg[] = [];
 
@@ -486,8 +486,9 @@ class ThreadComputer {
             const maxX = domainSize.width;
             const maxY = domainSize.height;
 
-            const nbPegsPerWidth = Math.ceil(maxX / pegsSpacing);
-            const nbPegsPerHeight = Math.ceil(maxY / pegsSpacing);
+            const aspectRatio = maxY / maxX;
+            const nbPegsPerWidth = Math.round(0.5 * pegsCount / (1 + aspectRatio));
+            const nbPegsPerHeight = Math.round(0.5 * (pegsCount - 2 * nbPegsPerWidth));
 
             pegs.push({ x: 0, y: 0 });
 
@@ -523,10 +524,8 @@ class ThreadComputer {
                 return minAngle <= TWO_PI / 16;
             };
 
-            const maxSize = Math.max(domainSize.width, domainSize.height);
-            const nbPegs = Math.ceil(0.5 * TWO_PI * maxSize / pegsSpacing);
-            const baseDeltaAngle = TWO_PI / nbPegs;
-            for (let iPeg = 0; iPeg < nbPegs; iPeg++) {
+            const baseDeltaAngle = TWO_PI / pegsCount;
+            for (let iPeg = 0; iPeg < pegsCount; iPeg++) {
                 const angle = iPeg * baseDeltaAngle;
                 const peg: IPegCircle = {
                     x: 0.5 * domainSize.width * (1 + Math.cos(angle)),

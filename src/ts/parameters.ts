@@ -5,7 +5,7 @@ import "./page-interface-generated";
 const controlId = {
     UPLOAD_INPUT_IMAGE: "input-image-upload-button",
     SHAPE: "shape-tabs-id",
-    PEGS_DENSITY: "pegs-range-id",
+    PEGS_COUNT: "pegs-range-id",
     NB_LINES: "lines-range-id",
     QUALITY: "quality-tabs-id",
     MODE: "thread-mode-tabs-id",
@@ -45,7 +45,7 @@ function triggerReset(): void {
 }
 
 Page.Tabs.addObserver(controlId.SHAPE, triggerReset);
-Page.Range.addLazyObserver(controlId.PEGS_DENSITY, triggerReset);
+Page.Range.addLazyObserver(controlId.PEGS_COUNT, triggerReset);
 Page.Tabs.addObserver(controlId.QUALITY, triggerReset);
 Page.Tabs.addObserver(controlId.MODE, triggerReset);
 Page.Range.addLazyObserver(controlId.LINES_OPACITY, triggerReset);
@@ -93,8 +93,8 @@ abstract class Parameters {
         return Page.Tabs.getValues(controlId.SHAPE)[0] as EShape;
     }
 
-    public static get pegsSpacing(): number {
-        return 1.1 - Page.Range.getValue(controlId.PEGS_DENSITY);
+    public static get pegsCount(): number {
+        return Page.Range.getValue(controlId.PEGS_COUNT);
     }
 
     public static get quality(): number {
