@@ -524,15 +524,25 @@ class ThreadComputer {
                 return minAngle <= TWO_PI / 16;
             };
 
-            const baseDeltaAngle = TWO_PI / pegsCount;
-            for (let iPeg = 0; iPeg < pegsCount; iPeg++) {
-                const angle = iPeg * baseDeltaAngle;
+            const halfWidth = 0.5 * domainSize.width;
+            const halfHeight = 0.5 * domainSize.height;
+            const circumference = Math.PI * (3 * (halfWidth + halfHeight) - Math.sqrt((3 * halfWidth + halfHeight) * (halfWidth + 3 * halfHeight)));
+            const distanceBetweenPegs = circumference / pegsCount;
+            let angle = 0;
+            while (pegs.length < pegsCount) {
+                const cosAngle = Math.cos(angle);
+                const sinAngle = Math.sin(angle);
+
                 const peg: IPegCircle = {
-                    x: 0.5 * domainSize.width * (1 + Math.cos(angle)),
-                    y: 0.5 * domainSize.height * (1 + Math.sin(angle)),
+                    x: halfWidth * (1 + cosAngle),
+                    y: halfHeight * (1 + sinAngle),
                     angle,
                 }
                 pegs.push(peg);
+
+                // compute the delta angle so that pegs are evenly-spaced even on ellipses
+                const deltaAngle = distanceBetweenPegs / Math.sqrt(halfWidth * halfWidth * sinAngle * sinAngle + halfHeight * halfHeight * cosAngle * cosAngle);
+                angle += deltaAngle;
             }
         }
 
